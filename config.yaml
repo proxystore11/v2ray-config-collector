@@ -1,5 +1,5 @@
 project:
-  name: "FreedomBridge"
+  name: "PRX11"
   version: "2.0.0"
   description: "پروژه جمع‌آوری خودکار کانفیگ‌های V2Ray"
 
@@ -25,3 +25,7 @@ settings:
   max_configs: 50
   timeout: 30
   user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+
+remark:
+  format: "{flag} {country} {config_number:02d} {project_name}"
+  project_name: "PRX11"
