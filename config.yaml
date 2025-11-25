@@ -1,0 +1,27 @@
+project:
+  name: "FreedomBridge"
+  version: "2.0.0"
+  description: "پروژه جمع‌آوری خودکار کانفیگ‌های V2Ray"
+
+sources:
+  github:
+    - "https://raw.githubusercontent.com/freev2ray/freev2ray/master/README.md"
+    - "https://raw.githubusercontent.com/mahdibland/ShadowsocksAggregator/master/Eternity.txt"
+    - "https://raw.githubusercontent.com/v2ray/dist/master/v2ray-configs.txt"
+
+countries:
+  US: "🇺🇸 آمریکا"
+  DE: "🇩🇪 آلمان" 
+  FR: "🇫🇷 فرانسه"
+  NL: "🇳🇱 هلند"
+  TR: "🇹🇷 ترکیه"
+  SG: "🇸🇬 سنگاپور"
+  JP: "🇯🇵 ژاپن"
+  KR: "🇰🇷 کره جنوبی"
+  GB: "🇬🇧 انگلیس"
+  CA: "🇨🇦 کانادا"
+
+settings:
+  max_configs: 50
+  timeout: 30
+  user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
