@@ -1,31 +1,50 @@
 project:
   name: "PRX11"
-  version: "2.0.0"
-  description: "پروژه جمع‌آوری خودکار کانفیگ‌های V2Ray"
+  version: "3.0.0"
+  description: "🛡️ پروژه پیشرفته جمع‌آوری کانفیگ‌های V2Ray | PRX11"
+  author: "PRX11 Team"
 
 sources:
-  github:
+  vmess:
     - "https://raw.githubusercontent.com/freev2ray/freev2ray/master/README.md"
-    - "https://raw.githubusercontent.com/mahdibland/ShadowsocksAggregator/master/Eternity.txt"
+    - "https://raw.githubusercontent.com/eliv2-hub/ELiV2-RAY/refs/heads/main/Channel-ELiV2-Ray.txt"
+    - "https://raw.githubusercontent.com/Farid-Karimi/Config-Collector/main/vmess_iran.txt"
+
+  vless:
+    - "https://raw.githubusercontent.com/arshiacomplus/v2rayExtractor/refs/heads/main/vless.html"
+    - "https://raw.githubusercontent.com/Farid-Karimi/Config-Collector/main/mixed_iran.txt"
+
+  shadowsocks:
+    - "https://raw.githubusercontent.com/arshiacomplus/v2rayExtractor/refs/heads/main/ss.html"
+    - "https://raw.githubusercontent.com/arshiacomplus/v2rayExtractor/refs/heads/main/mixarshia_ss"
+
+  trojan:
     - "https://raw.githubusercontent.com/v2ray/dist/master/v2ray-configs.txt"
 
 countries:
-  US: "🇺🇸 آمریکا"
-  DE: "🇩🇪 آلمان" 
-  FR: "🇫🇷 فرانسه"
-  NL: "🇳🇱 هلند"
-  TR: "🇹🇷 ترکیه"
-  SG: "🇸🇬 سنگاپور"
-  JP: "🇯🇵 ژاپن"
-  KR: "🇰🇷 کره جنوبی"
-  GB: "🇬🇧 انگلیس"
-  CA: "🇨🇦 کانادا"
+  US: "🇺🇸 | آمریکا"
+  DE: "🇩🇪 | آلمان" 
+  FR: "🇫🇷 | فرانسه"
+  NL: "🇳🇱 | هلند"
+  TR: "🇹🇷 | ترکیه"
+  SG: "🇸🇬 | سنگاپور"
+  JP: "🇯🇵 | ژاپن"
+  KR: "🇰🇷 | کره"
+  GB: "🇬🇧 | انگلیس"
+  CA: "🇨🇦 | کانادا"
+  HK: "🇭🇰 | هنگ‌کنگ"
+  IR: "🇮🇷 | ایران"
+  CN: "🇨🇳 | چین"
+  RU: "🇷🇺 | روسیه"
+  BR: "🇧🇷 | برزیل"
+  IN: "🇮🇳 | هند"
 
 settings:
-  max_configs: 50
-  timeout: 30
+  max_configs: 100
+  timeout: 25
   user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  enable_ip_api: true
 
 remark:
-  format: "{flag} {country} {config_number:02d} {project_name}"
+  format: "{flag} | {country} | {config_number:02d} | {project_name}"
   project_name: "PRX11"
