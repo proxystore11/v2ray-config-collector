@@ -1,11 +1,22 @@
 {
-  "last_update": "2025-11-25T20:33:16.807857",
+  "last_update": "2025-11-25T20:35:37.382435",
   "total_configs": 50,
   "country_stats": {
-    "US": 41,
-    "DE": 6,
-    "JP": 2,
+    "CA": 7,
+    "GB": 2,
+    "FR": 4,
+    "DE": 8,
+    "PL": 1,
+    "US": 11,
+    "MY": 1,
+    "LV": 1,
+    "HK": 6,
+    "NL": 1,
+    "SG": 5,
+    "JP": 1,
+    "BR": 1,
     "Unknown": 1
   },
-  "project": "PRX11"
+  "project": "PRX11",
+  "subscription_file": "PRX11-FREE.txt"
 }
