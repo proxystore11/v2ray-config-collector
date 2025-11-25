@@ -7,6 +7,7 @@ import re
 import yaml
 from datetime import datetime
 import hashlib
+import ipaddress
 
 class V2RayConfigCollector:
     def __init__(self):
@@ -21,7 +22,7 @@ class V2RayConfigCollector:
                 return yaml.safe_load(f)
         except:
             return {
-                'project': {'name': 'FreedomBridge', 'version': '1.0.0'},
+                'project': {'name': 'PRX11', 'version': '1.0.0'},
                 'sources': {
                     'github': [
                         'https://raw.githubusercontent.com/freev2ray/freev2ray/master/README.md',
@@ -32,9 +33,14 @@ class V2RayConfigCollector:
                 'countries': {
                     'US': '🇺🇸 آمریکا', 'DE': '🇩🇪 آلمان', 'FR': '🇫🇷 فرانسه',
                     'NL': '🇳🇱 هلند', 'TR': '🇹🇷 ترکیه', 'SG': '🇸🇬 سنگاپور',
-                    'JP': '🇯🇵 ژاپن', 'KR': '🇰🇷 کره جنوبی', 'GB': '🇬🇧 انگلیس'
+                    'JP': '🇯🇵 ژاپن', 'KR': '🇰🇷 کره جنوبی', 'GB': '🇬🇧 انگلیس',
+                    'CA': '🇨🇦 کانادa'
                 },
-                'settings': {'max_configs': 50, 'timeout': 30}
+                'settings': {'max_configs': 50, 'timeout': 30},
+                'remark': {
+                    'format': '{flag} {country} {config_number:02d} {project_name}',
+                    'project_name': 'PRX11'
+                }
             }
     
     def create_directories(self):
@@ -138,6 +144,60 @@ class V2RayConfigCollector:
         print(f"✅ پردازش کامل: {len(processed)} کانفیگ پردازش شد")
         return processed
     
+    def detect_country_from_ip(self, server_address):
+        """تشخیص کشور بر اساس IP با استفاده از API رایگان"""
+        try:
+            # اگر آدرس IP نیست (مثلاً دامنه است)، ابتدا IP آن را پیدا می‌کنیم
+            if not self.is_ip_address(server_address):
+                # برای سادگی، از دامنه تشخیص می‌دهیم
+                return self.detect_country_from_domain(server_address)
+            
+            # استفاده از API رایگان برای تشخیص کشور از IP
+            response = requests.get(f'http://ip-api.com/json/{server_address}', timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                if data['status'] == 'success':
+                    return data['countryCode']
+        except:
+            pass
+        
+        # اگر API جواب نداد، از دامنه تشخیص می‌دهیم
+        return self.detect_country_from_domain(server_address)
+    
+    def is_ip_address(self, address):
+        """بررسی اینکه آیا آدرس IP است یا دامنه"""
+        try:
+            ipaddress.ip_address(address)
+            return True
+        except:
+            return False
+    
+    def detect_country_from_domain(self, domain):
+        """تشخیص کشور از دامنه"""
+        domain_lower = domain.lower()
+        
+        # تشخیص دقیق‌تر بر اساس TLD و کلمات کلیدی
+        country_tlds = {
+            'US': ['.us', '.com', '.net', '.org', 'usa', 'united', 'american'],
+            'DE': ['.de', 'german', 'deutschland', 'berlin', 'frankfurt'],
+            'FR': ['.fr', 'france', 'paris', 'français'],
+            'NL': ['.nl', 'netherlands', 'amsterdam', 'dutch'],
+            'TR': ['.tr', 'turkey', 'turkish', 'istanbul'],
+            'SG': ['.sg', 'singapore'],
+            'JP': ['.jp', 'japan', 'tokyo', 'osaka'],
+            'KR': ['.kr', 'korea', 'seoul', 'korean'],
+            'GB': ['.uk', '.gb', 'london', 'british', 'england'],
+            'CA': ['.ca', 'canada', 'toronto', 'vancouver']
+        }
+        
+        for country_code, indicators in country_tlds.items():
+            for indicator in indicators:
+                if indicator in domain_lower:
+                    return country_code
+        
+        # پیش‌فرض آمریکا برای دامنه‌های عمومی
+        return 'US'
+    
     def process_vmess_config(self, config, country_counters):
         """پردازش کانفیگ VMess"""
         config_url = config['raw_config']
@@ -154,9 +214,9 @@ class V2RayConfigCollector:
         decoded = base64.b64decode(encoded).decode('utf-8')
         config_data = json.loads(decoded)
         
-        # تشخیص کشور
+        # تشخیص کشور (با روش جدید)
         server_address = config_data.get('add', '')
-        country_code = self.detect_country_from_server(server_address)
+        country_code = self.detect_country_from_ip(server_address)
         
         # شمارنده برای کشور
         if country_code not in country_counters:
@@ -164,7 +224,7 @@ class V2RayConfigCollector:
         country_counters[country_code] += 1
         config_number = country_counters[country_code]
         
-        # تولید ریمارک جدید
+        # تولید ریمارک جدید با فرمت PRX11
         new_remark = self.generate_remark(country_code, config_number)
         config_data['ps'] = new_remark
         
@@ -185,32 +245,8 @@ class V2RayConfigCollector:
             'protocol': 'vmess'
         }
     
-    def detect_country_from_server(self, server):
-        """تشخیص کشور بر اساس آدرس سرور"""
-        server_lower = server.lower()
-        
-        country_keywords = {
-            'US': ['us', 'usa', 'united', 'american'],
-            'DE': ['de', 'deutschland', 'germany'],
-            'FR': ['fr', 'france', 'paris'],
-            'NL': ['nl', 'netherlands', 'amsterdam'],
-            'TR': ['tr', 'turkey', 'istanbul'],
-            'SG': ['sg', 'singapore'],
-            'JP': ['jp', 'japan', 'tokyo'],
-            'KR': ['kr', 'korea', 'seoul'],
-            'GB': ['gb', 'uk', 'london', 'britain'],
-            'CA': ['ca', 'canada', 'toronto']
-        }
-        
-        for country_code, keywords in country_keywords.items():
-            for keyword in keywords:
-                if keyword in server_lower:
-                    return country_code
-        
-        return 'US'  # پیش‌فرض
-    
     def generate_remark(self, country_code, config_number):
-        """تولید ریمارک اختصاصی"""
+        """تولید ریمارک اختصاصی با فرمت PRX11"""
         country_info = self.config_data['countries'].get(country_code, '🇺🇸 آمریکا')
         
         if ' ' in country_info:
@@ -220,12 +256,12 @@ class V2RayConfigCollector:
             flag = '🇺🇸'
             country_name = country_code
         
-        project_name = self.config_data['project']['name']
+        project_name = self.config_data.get('remark', {}).get('project_name', 'PRX11')
         
         return f"{flag} {country_name} {config_number:02d} {project_name}"
     
     def save_results(self):
-        """ذخیره‌سازی نتایج"""
+        """ذخیره‌سازی نتایج با نام PRX11-FREE.txt"""
         print("💾 شروع ذخیره‌سازی نتایج...")
         
         # آماده‌سازی داده‌ها
@@ -238,7 +274,11 @@ class V2RayConfigCollector:
             country = config.get('country', 'Unknown')
             country_stats[country] = country_stats.get(country, 0) + 1
         
-        # ذخیره فایل اشتراک
+        # ذخیره فایل اشتراک با نام جدید PRX11-FREE.txt
+        with open("output/subscriptions/PRX11-FREE.txt", "w", encoding="utf-8") as f:
+            f.write(subscription_content)
+        
+        # همچنین فایل subscription_latest.txt را هم نگه می‌داریم برای سازگاری
         with open("output/subscriptions/subscription_latest.txt", "w", encoding="utf-8") as f:
             f.write(subscription_content)
         
@@ -252,13 +292,15 @@ class V2RayConfigCollector:
             "last_update": datetime.now().isoformat(),
             "total_configs": len(self.processed_configs),
             "country_stats": country_stats,
-            "project": self.config_data['project']['name']
+            "project": "PRX11",
+            "subscription_file": "PRX11-FREE.txt"
         }
         
         with open("output/configs/summary.json", "w", encoding="utf-8") as f:
             json.dump(summary, f, ensure_ascii=False, indent=2)
         
         print(f"✅ ذخیره‌سازی کامل: {len(self.processed_configs)} کانفیگ")
+        print(f"📁 فایل اشتراک: PRX11-FREE.txt")
         
         # نمایش آمار
         print("\n📊 آمار کشورها:")
@@ -268,8 +310,8 @@ class V2RayConfigCollector:
     
     def run(self):
         """اجرای کامل پروژه"""
-        print("🚀 شروع پروژه جمع‌آوری کانفیگ‌های V2Ray")
-        print("=" * 50)
+        print("🚀 شروع پروژه جمع‌آوری کانفیگ‌های V2Ray - PRX11")
+        print("=" * 60)
         
         try:
             # ایجاد پوشه‌ها
@@ -290,7 +332,8 @@ class V2RayConfigCollector:
             
             print(f"\n🎉 پروژه با موفقیت کامل شد!")
             print(f"📦 تعداد کانفیگ‌های پردازش شده: {len(self.processed_configs)}")
-            print("🔗 لینک اشتراک مستقیم:")
+            print("🔗 لینک‌های اشتراک:")
+            print("   https://github.com/proxystore11/v2ray-config-collector/raw/main/output/subscriptions/PRX11-FREE.txt")
             print("   https://github.com/proxystore11/v2ray-config-collector/raw/main/output/subscriptions/subscription_latest.txt")
             
             return True
