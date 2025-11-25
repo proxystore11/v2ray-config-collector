@@ -14,12 +14,3 @@
 
 - **فایل مستقیم**: [subscription_latest.txt](https://github.com/proxystore11/v2ray-config-collector/raw/main/output/subscriptions/subscription_latest.txt)
 - **نسخه Base64**: [subscription_base64.txt](https://github.com/proxystore11/v2ray-config-collector/raw/main/output/subscriptions/subscription_base64.txt)
-
-## 🛠 راه‌اندازی محلی
-
-```bash
-# نصب dependencies
-pip install -r requirements.txt
-
-# اجرای پروژه
-python main.py
