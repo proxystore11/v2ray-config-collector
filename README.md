@@ -1,6 +1,3 @@
-# v2ray-config-collector
-Automated V2Ray config collector with custom remarks
-
 # 🚀 V2Ray Config Collector
 
 پروژه جمع‌آوری خودکار کانفیگ‌های V2Ray با ریمارک اختصاصی
