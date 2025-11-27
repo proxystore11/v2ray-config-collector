@@ -1,18 +1,18 @@
 {
-  "last_update": "2025-11-27T01:06:22.275199",
+  "last_update": "2025-11-27T06:23:16.753398",
   "total_configs": 100,
   "country_stats": {
-    "US": 56,
-    "CA": 9,
+    "US": 60,
+    "CA": 3,
     "DE": 16,
     "SG": 1,
     "IR": 7,
-    "CN": 2,
+    "CN": 3,
     "BR": 1,
     "IN": 1,
     "GB": 3,
     "HK": 3,
-    "JP": 1
+    "JP": 2
   },
   "protocol_stats": {
     "vmess": 100
