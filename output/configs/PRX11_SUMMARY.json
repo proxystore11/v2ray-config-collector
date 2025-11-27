@@ -1,23 +1,23 @@
 {
-  "last_update": "2025-11-27T22:45:43.807127",
+  "last_update": "2025-11-27T22:46:45.887514",
   "total_configs": 100,
+  "working_configs": 0,
+  "success_rate": "0.0%",
   "country_stats": {
-    "CA": 12,
-    "DE": 17,
-    "US": 48,
-    "SG": 1,
-    "IR": 7,
-    "CN": 3,
-    "AU": 1,
-    "BR": 1,
-    "IN": 1,
-    "GB": 4,
-    "HK": 3,
-    "JP": 2
+    "US": 86,
+    "DE": 9,
+    "IR": 4,
+    "CN": 1
   },
   "protocol_stats": {
     "vmess": 100
   },
-  "project": "PRX11",
-  "subscription_file": "PRX11-FREE.txt"
+  "subscription_files": {
+    "all": "PRX11-ALL.txt",
+    "vmess": "PRX11-VMESS.txt",
+    "vless": "PRX11-VLESS.txt",
+    "shadowsocks": "PRX11-SS.txt",
+    "trojan": "PRX11-TROJAN.txt",
+    "working": "PRX11-WORKING.txt"
+  }
 }
