@@ -1,12 +1,10 @@
 {
-  "last_update": "2025-11-27T22:54:27.225756",
+  "last_update": "2025-11-27T23:10:13.469654",
   "total_configs": 100,
-  "working_configs": 0,
-  "success_rate": "0.0%",
   "country_stats": {
-    "US": 86,
-    "DE": 9,
-    "IR": 4,
+    "US": 82,
+    "DE": 10,
+    "IR": 7,
     "CN": 1
   },
   "protocol_stats": {
