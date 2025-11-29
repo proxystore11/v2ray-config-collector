@@ -1,14 +1,14 @@
 {
-  "last_update": "2025-11-29T18:15:59.299875",
+  "last_update": "2025-11-29T18:17:20.547897",
   "total_configs": 100,
   "country_stats": {
-    "US": 85,
-    "IR": 6,
-    "BR": 2,
+    "US": 83,
+    "IR": 5,
+    "BR": 3,
     "TR": 2,
-    "DE": 1,
-    "RU": 3,
-    "CA": 1
+    "RU": 5,
+    "NL": 1,
+    "DE": 1
   },
   "protocol_stats": {
     "vless": 100
