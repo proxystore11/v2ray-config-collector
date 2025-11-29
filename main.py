@@ -228,7 +228,7 @@ async def run_collector() -> None:
             fragment_body = fragment_text
 
         insta_header = (
-            "#profile-title: base64:8J+UpSBGcmFnbWVudCDwn5Sl\n"
+            "#profile-title: base64:cHJ4MTEtaW5zdGEteW91dHViZQ==\n"
             "#profile-update-interval: 24\n"
             "#subscription-userinfo: upload=0; download=0; total=10737418240000000; expire=2546249531\n"
             "#support-url: https://t.me/proxystore11\n"
