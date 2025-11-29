@@ -1,21 +1,23 @@
 {
-  "last_update": "2025-11-29T18:58:03.551458",
-  "total_configs": 100,
+  "last_update": "2025-11-29T19:40:29.785852",
+  "project": {
+    "name": "PRX11",
+    "version": "5.0.0",
+    "description": "Async V2Ray collector with ping & web UI",
+    "author": "PRX11 Team"
+  },
+  "total_configs": 200,
   "country_stats": {
-    "US": 83,
-    "IR": 5,
-    "BR": 3,
-    "TR": 2,
-    "RU": 5,
-    "NL": 1,
-    "DE": 1
+    "US": 197,
+    "DE": 2,
+    "FR": 1
   },
   "protocol_stats": {
-    "vless": 100
+    "vless": 200
   },
   "ping_stats": {
     "working": 0,
-    "unknown": 100,
+    "unknown": 200,
     "error": 0
   },
   "subscription_files": {
@@ -24,7 +26,9 @@
     "vless": "PRX11-VLESS.txt",
     "shadowsocks": "PRX11-SS.txt",
     "trojan": "PRX11-TROJAN.txt",
-    "working": "PRX11-WORKING.txt"
+    "working": "PRX11-WORKING.txt",
+    "all_b64": "PRX11-ALL.b64.txt",
+    "all_gzip_b64": "PRX11-ALL.gz.b64.txt"
   },
   "sources_count": 2,
   "ping_services": [
