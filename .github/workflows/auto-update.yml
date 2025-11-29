@@ -2,34 +2,48 @@ name: PRX11 Auto Update
 
 on:
   schedule:
-    - cron: "0 */6 * * *"   # اجرای خودکار هر 6 ساعت
-  workflow_dispatch:         # اجرای دستی
+    - cron: "0 */6 * * *"     # اجرا هر 6 ساعت یکبار
+  workflow_dispatch:           # اجرا دستی از داشبورد GitHub
 
 jobs:
   update:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest     # Ubuntu 24.04
+
+    permissions:
+      contents: write          # اجازه commit & push
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
 
+      # --- 1) دریافت ریپو ---
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+
+      # --- 2) نصب پایتون نسخه معتبر ---
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.10
+          python-version: "3.10"    # فقط از نسخه‌های موجود استفاده می‌کنیم
 
+
+      # --- 3) نصب وابستگی‌ها ---
       - name: Install dependencies
         run: |
+          pip install --upgrade pip
           pip install aiohttp pyyaml
 
+
+      # --- 4) اجرای Collector ---
       - name: Run PRX11 Collector
         run: |
           python main.py
 
-      - name: Commit & Push Output
+
+      # --- 5) Commit تغییرات ---
+      - name: Commit and Push changes
         run: |
           git config user.name "PRX11 Bot"
           git config user.email "bot@users.noreply.github.com"
           git add output/ || true
           git commit -m "Auto Update: $(date '+%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
-          git push || echo "No push"
+          git push || echo "No changes"
