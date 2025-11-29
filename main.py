@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-# 🛡️ PRX11 V2Ray Config Collector - Enhanced Version
-# ✨ پارسر پیشرفته VLess | عملکرد بهینه
+# 🛡️ PRX11 V2Ray Config Collector - Advanced Ping Version
+# ✨ پینگ و اطلاعات IP | منابع به روز
 
 import os
 import json
@@ -11,13 +11,20 @@ import yaml
 from datetime import datetime
 import hashlib
 from urllib.parse import urlparse, parse_qs, unquote
+import time
+import concurrent.futures
 
-class PRX11EnhancedCollector:
+class PRX11PingCollector:
     def __init__(self):
         self.config_data = self.load_config()
         self.collected_configs = []
         self.processed_configs = []
         self.hidden_sources = self.decode_sources()
+        self.ping_services = [
+            "https://api.codebazan.ir/ping/",
+            "https://api.anjoman.server.ir/ping/"  # سرویس پینگ جایگزین
+        ]
+        self.ipinfo_service = "https://api.codebazan.ir/ipinfo/"
         
     def load_config(self):
         """بارگذاری تنظیمات از فایل YAML"""
@@ -32,7 +39,7 @@ class PRX11EnhancedCollector:
         """دیکد کردن منابع مخفی"""
         encoded_sources = [
             "aHR0cHM6Ly90d2lsaWdodC13b29kLTkyMjQubXVqa2R0Z2oud29ya2Vycy5kZXYvYXBpL2NvbmZpZ3M=",
-            "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2VsaXYyLWh1Yi9FTElWMi1SQVkvcmVmcy9oZWFkcy9tYWluL0NoYW5uZWwtRUxJVjItUmF5LnR4dA=="
+            "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2VsaXYyLWh1Yi9FTGlWMi1SQVkvcmVmcy9oZWFkcy9tYWluL0NoYW5uZWwtRUxpVjItUmF5LnR4dA=="
         ]
         
         sources = []
@@ -48,13 +55,15 @@ class PRX11EnhancedCollector:
     def get_default_config(self):
         """تنظیمات پیش‌فرض"""
         return {
-            'project': {'name': 'PRX11', 'version': '4.0.0'},
+            'project': {'name': 'PRX11', 'version': '4.2.0'},
             'settings': {
                 'max_configs': 100,
-                'timeout': 30
+                'timeout': 30,
+                'ping_timeout': 10,
+                'max_workers': 5
             },
             'remark': {
-                'format': '{flag} | {country} | {config_number:02d} | {project_name}',
+                'format': '{flag} | {country} | {config_number:02d} | {ping}ms | {project_name}',
                 'project_name': 'PRX11'
             },
             'subscription_files': {
@@ -62,7 +71,8 @@ class PRX11EnhancedCollector:
                 'vmess': 'PRX11-VMESS.txt',
                 'vless': 'PRX11-VLESS.txt',
                 'shadowsocks': 'PRX11-SS.txt',
-                'trojan': 'PRX11-TROJAN.txt'
+                'trojan': 'PRX11-TROJAN.txt',
+                'working': 'PRX11-WORKING.txt'
             }
         }
     
@@ -159,17 +169,105 @@ class PRX11EnhancedCollector:
         
         return unique_configs
     
-    def process_configs(self):
-        """پردازش کانفیگ‌ها"""
-        print("\n🔄 شروع پردازش کانفیگ‌ها...")
-        print("=" * 40)
+    def ping_server(self, server_address):
+        """پینگ سرور با استفاده از سرویس API"""
+        if not server_address or server_address in ['unknown', 'Unknown']:
+            return None, None
+        
+        for ping_service in self.ping_services:
+            try:
+                ping_url = f"{ping_service}?url={server_address}"
+                response = requests.get(ping_url, timeout=self.config_data['settings']['ping_timeout'])
+                
+                if response.status_code == 200:
+                    # استخراج پینگ از پاسخ
+                    ping_text = response.text.lower()
+                    
+                    # جستجوی عدد پینگ در متن
+                    ping_match = re.search(r'(\d+\.?\d*)\s*ms', ping_text)
+                    if ping_match:
+                        ping_value = float(ping_match.group(1))
+                        return ping_value, server_address
+                    
+                    # جستجوی عدد پینگ ساده
+                    ping_match_simple = re.search(r'ping[^\d]*(\d+\.?\d*)', ping_text)
+                    if ping_match_simple:
+                        ping_value = float(ping_match_simple.group(1))
+                        return ping_value, server_address
+                        
+            except Exception as e:
+                print(f"⚠️ خطا در پینگ {server_address} با {ping_service}: {e}")
+                continue
+        
+        return None, server_address
+    
+    def get_ip_info(self, server_address):
+        """دریافت اطلاعات IP از سرویس API"""
+        if not server_address or server_address in ['unknown', 'Unknown']:
+            return None
+        
+        try:
+            # اول DNS lookup برای گرفتن IP
+            try:
+                ip = socket.gethostbyname(server_address)
+            except:
+                ip = server_address
+            
+            ipinfo_url = f"{self.ipinfo_service}?ip={ip}"
+            response = requests.get(ipinfo_url, timeout=self.config_data['settings']['ping_timeout'])
+            
+            if response.status_code == 200:
+                return response.json()
+            else:
+                return None
+                
+        except Exception as e:
+            print(f"⚠️ خطا در دریافت اطلاعات IP برای {server_address}: {e}")
+            return None
+    
+    def process_configs_with_ping(self):
+        """پردازش کانفیگ‌ها با پینگ و اطلاعات IP"""
+        print("\n🔄 شروع پردازش کانفیگ‌ها با پینگ...")
+        print("=" * 45)
         
         processed = []
         country_counters = {}
         protocol_stats = {}
         
         max_configs = self.config_data['settings']['max_configs']
+        max_workers = self.config_data['settings']['max_workers']
         
+        # استخراج سرورها برای پینگ گروهی
+        servers_to_ping = []
+        for i, config in enumerate(self.collected_configs[:max_configs]):
+            server_address = self.extract_server_address(config)
+            if server_address and server_address not in ['unknown', 'Unknown']:
+                servers_to_ping.append((i, server_address))
+        
+        print(f"🌐 پینگ {len(servers_to_ping)} سرور...")
+        
+        # پینگ همزمان
+        ping_results = {}
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            future_to_server = {
+                executor.submit(self.ping_server, server): (idx, server) 
+                for idx, server in servers_to_ping
+            }
+            
+            completed = 0
+            for future in concurrent.futures.as_completed(future_to_server):
+                idx, server = future_to_server[future]
+                try:
+                    ping_value, _ = future.result()
+                    ping_results[idx] = ping_value
+                    completed += 1
+                    if completed % 10 == 0:
+                        print(f"📡 پینگ شده: {completed}/{len(servers_to_ping)}")
+                except Exception as e:
+                    print(f"⚠️ خطا در پینگ سرور {server}: {e}")
+                    ping_results[idx] = None
+        
+        # پردازش نهایی کانفیگ‌ها
         for i, config in enumerate(self.collected_configs[:max_configs]):
             try:
                 # آمار پروتکل
@@ -177,15 +275,15 @@ class PRX11EnhancedCollector:
                 protocol_stats[proto] = protocol_stats.get(proto, 0) + 1
                 
                 if config['type'] == 'vmess':
-                    processed_config = self.process_vmess_config(config, country_counters, i+1)
+                    processed_config = self.process_vmess_config(config, country_counters, i+1, ping_results.get(i))
                 elif config['type'] == 'vless':
-                    processed_config = self.process_vless_config_enhanced(config, country_counters, i+1)
+                    processed_config = self.process_vless_config_enhanced(config, country_counters, i+1, ping_results.get(i))
                 elif config['type'] == 'trojan':
-                    processed_config = self.process_trojan_config_enhanced(config, country_counters, i+1)
+                    processed_config = self.process_trojan_config_enhanced(config, country_counters, i+1, ping_results.get(i))
                 elif config['type'] == 'ss':
-                    processed_config = self.process_ss_config(config, country_counters, i+1)
+                    processed_config = self.process_ss_config(config, country_counters, i+1, ping_results.get(i))
                 else:
-                    processed_config = self.process_unknown_config(config, country_counters, i+1)
+                    processed_config = self.process_unknown_config(config, country_counters, i+1, ping_results.get(i))
                 
                 if processed_config:
                     processed.append(processed_config)
@@ -210,13 +308,43 @@ class PRX11EnhancedCollector:
         
         return processed
     
-    def process_vmess_config(self, config, country_counters, config_number):
-        """پردازش کانفیگ VMess"""
+    def extract_server_address(self, config):
+        """استخراج آدرس سرور از کانفیگ"""
+        try:
+            if config['type'] == 'vmess':
+                encoded = config['raw_config'][8:]
+                missing_padding = len(encoded) % 4
+                if missing_padding:
+                    encoded += '=' * (4 - missing_padding)
+                
+                decoded = base64.b64decode(encoded).decode('utf-8')
+                config_data = json.loads(decoded)
+                return config_data.get('add', 'unknown')
+                
+            elif config['type'] == 'vless':
+                server_match = re.search(r'@([^:#?]+)', config['raw_config'])
+                return server_match.group(1) if server_match else 'unknown'
+                
+            elif config['type'] == 'trojan':
+                server_match = re.search(r'@([^:#?]+)', config['raw_config'])
+                return server_match.group(1) if server_match else 'unknown'
+                
+            elif config['type'] == 'ss':
+                # برای SS نیاز به decode پیچیده‌تر دارد
+                return 'unknown'
+                
+            else:
+                return 'unknown'
+                
+        except:
+            return 'unknown'
+    
+    def process_vmess_config(self, config, country_counters, config_number, ping_value):
+        """پردازش کانفیگ VMess با پینگ"""
         try:
             config_url = config['raw_config']
-            encoded = config_url[8:]  # حذف vmess://
+            encoded = config_url[8:]
             
-            # اصلاح padding
             missing_padding = len(encoded) % 4
             if missing_padding:
                 encoded += '=' * (4 - missing_padding)
@@ -236,7 +364,7 @@ class PRX11EnhancedCollector:
             country_counters[country_code] += 1
             country_config_number = country_counters[country_code]
             
-            new_remark = self.generate_beautiful_remark(country_code, country_config_number)
+            new_remark = self.generate_beautiful_remark(country_code, country_config_number, ping_value)
             config_data['ps'] = new_remark
             
             new_encoded = base64.b64encode(
@@ -253,123 +381,20 @@ class PRX11EnhancedCollector:
                 'server': server_address,
                 'port': config_data.get('port', ''),
                 'protocol': 'vmess',
-                'config_number': config_number
+                'config_number': config_number,
+                'ping': ping_value,
+                'status': 'working' if ping_value and ping_value < 1000 else 'unknown'
             }
             
         except Exception as e:
             print(f"⚠️ خطا در پردازش VMess: {e}")
             return self.create_fallback_config(config, config_number, 'vmess')
     
-    def process_vless_config_enhanced(self, config, country_counters, config_number):
-        """پردازش کانفیگ VLess - نسخه پیشرفته"""
+    def process_vless_config_enhanced(self, config, country_counters, config_number, ping_value):
+        """پردازش کانفیگ VLess با پینگ"""
         try:
             config_url = config['raw_config']
             
-            # پارس کردن URL با روش پیشرفته
-            parsed = self.parse_vless_url_enhanced(config_url)
-            
-            if parsed and parsed.get('server'):
-                server_address = parsed['server']
-                country_code = self.detect_country_advanced(server_address)
-                
-                if country_code not in country_counters:
-                    country_counters[country_code] = 0
-                country_counters[country_code] += 1
-                
-                new_remark = self.generate_beautiful_remark(country_code, country_counters[country_code])
-                
-                # ساخت URL جدید با ریمارک به روز شده
-                final_url = self.rebuild_vless_url_enhanced(config_url, new_remark)
-                
-                return {
-                    **config,
-                    'final_url': final_url,
-                    'country': country_code,
-                    'remark': new_remark,
-                    'server': server_address,
-                    'port': parsed.get('port', '443'),
-                    'protocol': 'vless',
-                    'config_number': config_number
-                }
-            else:
-                # اگر پارس کردن شکست خورد، از روش ساده استفاده کن
-                return self.process_vless_simple(config, country_counters, config_number)
-                
-        except Exception as e:
-            print(f"⚠️ خطا در پردازش VLess: {e}")
-            return self.process_vless_simple(config, country_counters, config_number)
-    
-    def parse_vless_url_enhanced(self, url):
-        """پارس کردن URL VLess - نسخه پیشرفته"""
-        try:
-            # حذف vless://
-            url_content = url[8:]
-            
-            # جدا کردن بخش اصلی و fragment (ریمارک)
-            if '#' in url_content:
-                main_part, fragment = url_content.split('#', 1)
-                remark = unquote(fragment)
-            else:
-                main_part, remark = url_content, ""
-            
-            # جدا کردن UUID و سرور
-            if '@' in main_part:
-                uuid_part, server_part = main_part.split('@', 1)
-            else:
-                return None
-            
-            # جدا کردن سرور و پورت
-            server_parts = server_part.split(':')
-            if len(server_parts) >= 2:
-                server_address = server_parts[0]
-                port_part = server_parts[1]
-                
-                # جدا کردن پورت از پارامترها
-                if '?' in port_part:
-                    port, params = port_part.split('?', 1)
-                else:
-                    port, params = port_part, ""
-            else:
-                return None
-            
-            return {
-                'server': server_address,
-                'port': port,
-                'uuid': uuid_part,
-                'params': params,
-                'remark': remark,
-                'type': 'vless'
-            }
-        except Exception as e:
-            print(f"⚠️ خطا در پارس VLess: {e}")
-            return None
-    
-    def rebuild_vless_url_enhanced(self, original_url, new_remark):
-        """بازسازی URL VLess با ریمارک جدید - نسخه پیشرفته"""
-        try:
-            parsed = self.parse_vless_url_enhanced(original_url)
-            if not parsed:
-                return original_url
-            
-            # ساخت URL جدید
-            encoded_remark = requests.utils.quote(new_remark)
-            final_url = f"vless://{parsed['uuid']}@{parsed['server']}:{parsed['port']}"
-            
-            if parsed['params']:
-                final_url += f"?{parsed['params']}"
-            
-            final_url += f"#{encoded_remark}"
-            
-            return final_url
-        except:
-            return original_url
-    
-    def process_vless_simple(self, config, country_counters, config_number):
-        """پردازش ساده VLess در صورت شکست روش پیشرفته"""
-        try:
-            config_url = config['raw_config']
-            
-            # استخراج سرور با regex
             server_match = re.search(r'@([^:#?]+)', config_url)
             if server_match:
                 server_address = server_match.group(1)
@@ -382,9 +407,8 @@ class PRX11EnhancedCollector:
                 country_counters[country_code] = 0
             country_counters[country_code] += 1
             
-            new_remark = self.generate_beautiful_remark(country_code, country_counters[country_code])
+            new_remark = self.generate_beautiful_remark(country_code, country_counters[country_code], ping_value)
             
-            # اضافه کردن ریمارک به URL
             if '#' in config_url:
                 base_url = config_url.split('#')[0]
                 final_url = f"{base_url}#{requests.utils.quote(new_remark)}"
@@ -398,19 +422,20 @@ class PRX11EnhancedCollector:
                 'remark': new_remark,
                 'server': server_address,
                 'protocol': 'vless',
-                'config_number': config_number
+                'config_number': config_number,
+                'ping': ping_value,
+                'status': 'working' if ping_value and ping_value < 1000 else 'unknown'
             }
                 
         except Exception as e:
-            print(f"⚠️ خطا در پردازش ساده VLess: {e}")
+            print(f"⚠️ خطا در پردازش VLess: {e}")
             return self.create_fallback_config(config, config_number, 'vless')
     
-    def process_trojan_config_enhanced(self, config, country_counters, config_number):
-        """پردازش کانفیگ Trojan - نسخه پیشرفته"""
+    def process_trojan_config_enhanced(self, config, country_counters, config_number, ping_value):
+        """پردازش کانفیگ Trojan با پینگ"""
         try:
             config_url = config['raw_config']
             
-            # استخراج سرور با regex
             server_match = re.search(r'@([^:#?]+)', config_url)
             if server_match:
                 server_address = server_match.group(1)
@@ -423,9 +448,8 @@ class PRX11EnhancedCollector:
                 country_counters[country_code] = 0
             country_counters[country_code] += 1
             
-            new_remark = self.generate_beautiful_remark(country_code, country_counters[country_code])
+            new_remark = self.generate_beautiful_remark(country_code, country_counters[country_code], ping_value)
             
-            # اضافه کردن ریمارک به URL
             if '#' in config_url:
                 base_url = config_url.split('#')[0]
                 final_url = f"{base_url}#{requests.utils.quote(new_remark)}"
@@ -439,26 +463,27 @@ class PRX11EnhancedCollector:
                 'remark': new_remark,
                 'server': server_address,
                 'protocol': 'trojan',
-                'config_number': config_number
+                'config_number': config_number,
+                'ping': ping_value,
+                'status': 'working' if ping_value and ping_value < 1000 else 'unknown'
             }
                 
         except Exception as e:
             print(f"⚠️ خطا در پردازش Trojan: {e}")
             return self.create_fallback_config(config, config_number, 'trojan')
     
-    def process_ss_config(self, config, country_counters, config_number):
-        """پردازش کانفیگ Shadowsocks"""
+    def process_ss_config(self, config, country_counters, config_number, ping_value):
+        """پردازش کانفیگ Shadowsocks با پینگ"""
         try:
             config_url = config['raw_config']
             
-            # برای SS، کشور را بر اساس الگو تشخیص می‌دهیم
             country_code = self.detect_country_from_ss(config_url)
             
             if country_code not in country_counters:
                 country_counters[country_code] = 0
             country_counters[country_code] += 1
             
-            new_remark = self.generate_beautiful_remark(country_code, country_counters[country_code])
+            new_remark = self.generate_beautiful_remark(country_code, country_counters[country_code], ping_value)
             
             return {
                 **config,
@@ -466,7 +491,9 @@ class PRX11EnhancedCollector:
                 'country': country_code,
                 'remark': new_remark,
                 'protocol': 'shadowsocks',
-                'config_number': config_number
+                'config_number': config_number,
+                'ping': ping_value,
+                'status': 'working' if ping_value and ping_value < 1000 else 'unknown'
             }
                 
         except Exception as e:
@@ -476,7 +503,6 @@ class PRX11EnhancedCollector:
     def detect_country_from_ss(self, ss_url):
         """تشخیص کشور از URL Shadowsocks"""
         try:
-            # استخراج سرور با regex
             server_match = re.search(r'@([^:#?]+)', ss_url)
             if server_match:
                 server_address = server_match.group(1)
@@ -485,14 +511,14 @@ class PRX11EnhancedCollector:
         except:
             return 'US'
     
-    def process_unknown_config(self, config, country_counters, config_number):
-        """پردازش کانفیگ‌های ناشناخته"""
+    def process_unknown_config(self, config, country_counters, config_number, ping_value):
+        """پردازش کانفیگ‌های ناشناخته با پینگ"""
         country_code = 'US'
         if country_code not in country_counters:
             country_counters[country_code] = 0
         country_counters[country_code] += 1
         
-        new_remark = self.generate_beautiful_remark(country_code, country_counters[country_code])
+        new_remark = self.generate_beautiful_remark(country_code, country_counters[country_code], ping_value)
         
         return {
             **config,
@@ -500,13 +526,15 @@ class PRX11EnhancedCollector:
             'country': country_code,
             'remark': new_remark,
             'protocol': 'unknown',
-            'config_number': config_number
+            'config_number': config_number,
+            'ping': ping_value,
+            'status': 'unknown'
         }
     
     def create_fallback_config(self, config, config_number, protocol):
         """ایجاد کانفیگ fallback در صورت خطا"""
         country_code = 'US'
-        new_remark = self.generate_beautiful_remark(country_code, config_number)
+        new_remark = self.generate_beautiful_remark(country_code, config_number, None)
         
         return {
             **config,
@@ -515,6 +543,7 @@ class PRX11EnhancedCollector:
             'remark': f"{new_remark} (Fallback)",
             'protocol': protocol,
             'config_number': config_number,
+            'ping': None,
             'status': 'error'
         }
     
@@ -525,7 +554,6 @@ class PRX11EnhancedCollector:
         
         countries_config = self.config_data.get('countries', {})
         
-        # اولویت 1: جستجو در TLD
         tld_match = re.search(r'\.([a-z]{2,3})$', server_address.lower())
         if tld_match:
             tld = tld_match.group(1)
@@ -533,7 +561,6 @@ class PRX11EnhancedCollector:
                 if tld == country_code.lower():
                     return country_code
         
-        # اولویت 2: کلمات کلیدی در دامنه
         server_lower = server_address.lower()
         for country_code, country_name in countries_config.items():
             country_keywords = [
@@ -547,8 +574,8 @@ class PRX11EnhancedCollector:
         
         return 'US'
     
-    def generate_beautiful_remark(self, country_code, config_number):
-        """تولید ریمارک زیبا"""
+    def generate_beautiful_remark(self, country_code, config_number, ping_value):
+        """تولید ریمارک زیبا با اطلاعات پینگ"""
         countries_config = self.config_data.get('countries', {})
         country_info = countries_config.get(country_code, '🇺🇸 | آمریکا')
         
@@ -559,7 +586,10 @@ class PRX11EnhancedCollector:
         
         project_name = self.config_data.get('remark', {}).get('project_name', 'PRX11')
         
-        return f"{flag} | {country_name} | {config_number:02d} | {project_name}"
+        if ping_value:
+            return f"{flag} | {country_name} | {config_number:02d} | {ping_value}ms | {project_name}"
+        else:
+            return f"{flag} | {country_name} | {config_number:02d} | ❓ms | {project_name}"
     
     def save_subscription_files(self):
         """ذخیره‌سازی لینک‌های ساب جداگانه"""
@@ -570,17 +600,19 @@ class PRX11EnhancedCollector:
             print("❌ هیچ کانفیگی برای ذخیره‌سازی وجود ندارد")
             return False
         
-        # جدا کردن بر اساس پروتکل
+        # جدا کردن بر اساس پروتکل و وضعیت
         vmess_configs = [c for c in self.processed_configs if c['protocol'] == 'vmess']
         vless_configs = [c for c in self.processed_configs if c['protocol'] == 'vless']
         ss_configs = [c for c in self.processed_configs if c['protocol'] == 'shadowsocks']
         trojan_configs = [c for c in self.processed_configs if c['protocol'] == 'trojan']
+        working_configs = [c for c in self.processed_configs if c.get('status') == 'working']
         
         print(f"📊 آمار کانفیگ‌ها:")
         print(f"   VMess: {len(vmess_configs)}")
         print(f"   VLess: {len(vless_configs)}") 
         print(f"   Shadowsocks: {len(ss_configs)}")
         print(f"   Trojan: {len(trojan_configs)}")
+        print(f"   کارکرده: {len(working_configs)}")
         
         # ایجاد محتوای فایل‌ها
         all_content = "\n".join([c['final_url'] for c in self.processed_configs])
@@ -588,6 +620,7 @@ class PRX11EnhancedCollector:
         vless_content = "\n".join([c['final_url'] for c in vless_configs])
         ss_content = "\n".join([c['final_url'] for c in ss_configs])
         trojan_content = "\n".join([c['final_url'] for c in trojan_configs])
+        working_content = "\n".join([c['final_url'] for c in working_configs])
         
         # ذخیره فایل‌ها
         subscription_files = self.config_data['subscription_files']
@@ -597,7 +630,8 @@ class PRX11EnhancedCollector:
             (subscription_files['vmess'], vmess_content, "فقط VMess"),
             (subscription_files['vless'], vless_content, "فقط VLess"),
             (subscription_files['shadowsocks'], ss_content, "فقط Shadowsocks"),
-            (subscription_files['trojan'], trojan_content, "فقط Trojan")
+            (subscription_files['trojan'], trojan_content, "فقط Trojan"),
+            (subscription_files['working'], working_content, "کانفیگ‌های کارکرده")
         ]
         
         success_count = 0
@@ -616,16 +650,19 @@ class PRX11EnhancedCollector:
         """ذخیره‌سازی گزارش‌ها"""
         print("\n📊 ایجاد گزارش‌های آماری...")
         
-        # آمار کشورها و پروتکل‌ها
+        # آمار کشورها، پروتکل‌ها و پینگ
         country_stats = {}
         protocol_stats = {}
+        ping_stats = {'working': 0, 'unknown': 0, 'error': 0}
         
         for config in self.processed_configs:
             country = config.get('country', 'Unknown')
             protocol = config.get('protocol', 'unknown')
+            status = config.get('status', 'unknown')
             
             country_stats[country] = country_stats.get(country, 0) + 1
             protocol_stats[protocol] = protocol_stats.get(protocol, 0) + 1
+            ping_stats[status] = ping_stats.get(status, 0) + 1
         
         # گزارش خلاصه
         summary = {
@@ -633,8 +670,10 @@ class PRX11EnhancedCollector:
             "total_configs": len(self.processed_configs),
             "country_stats": country_stats,
             "protocol_stats": protocol_stats,
+            "ping_stats": ping_stats,
             "subscription_files": self.config_data['subscription_files'],
-            "sources_count": len(self.hidden_sources)
+            "sources_count": len(self.hidden_sources),
+            "ping_services": self.ping_services
         }
         
         try:
@@ -645,9 +684,9 @@ class PRX11EnhancedCollector:
             print(f"❌ خطا در ذخیره گزارش: {e}")
         
         # نمایش آمار نهایی
-        self.display_final_stats(country_stats, protocol_stats)
+        self.display_final_stats(country_stats, protocol_stats, ping_stats)
     
-    def display_final_stats(self, country_stats, protocol_stats):
+    def display_final_stats(self, country_stats, protocol_stats, ping_stats):
         """نمایش آمار نهایی"""
         print("\n" + "🎯" * 20)
         print("📊 آمار نهایی پروژه PRX11")
@@ -668,6 +707,12 @@ class PRX11EnhancedCollector:
         for protocol, count in sorted(protocol_stats.items(), key=lambda x: x[1], reverse=True):
             print(f"   {protocol.upper():<15} : {count:>3} کانفیگ")
         
+        print("\n📡 آمار پینگ:")
+        print("-" * 20)
+        print(f"   ✅ کارکرده: {ping_stats.get('working', 0)} کانفیگ")
+        print(f"   ❓ ناشناخته: {ping_stats.get('unknown', 0)} کانفیگ")
+        print(f"   ❌ خطا: {ping_stats.get('error', 0)} کانفیگ")
+        
         print("\n📁 لینک‌های ساب ایجاد شده:")
         print("-" * 30)
         for key, filename in self.config_data['subscription_files'].items():
@@ -675,14 +720,15 @@ class PRX11EnhancedCollector:
         
         print("\n" + "✅" * 20)
         print("🚀 پروژه PRX11 با موفقیت تکمیل شد!")
+        print("📡 سیستم پینگ: فعال")
         print("🔒 منابع تغذیه: مخفی (Base64)")
         print("✅" * 20)
     
     def run(self):
         """اجرای کامل پروژه"""
         print("🎯" * 25)
-        print("🛡️  PRX11 V2Ray Config Collector - Enhanced Version")
-        print("✨ پارسر پیشرفته VLess | عملکرد بهینه")
+        print("🛡️  PRX11 V2Ray Config Collector - Ping Version")
+        print("✨ پینگ و اطلاعات IP | منابع به روز")
         print("🎯" * 25)
         
         try:
@@ -696,8 +742,8 @@ class PRX11EnhancedCollector:
                 print("❌ هیچ کانفیگی از منابع مخفی یافت نشد!")
                 return False
             
-            # پردازش کانفیگ‌ها
-            self.process_configs()
+            # پردازش کانفیگ‌ها با پینگ
+            self.process_configs_with_ping()
             
             if not self.processed_configs:
                 print("❌ هیچ کانفیگی پردازش نشد!")
@@ -722,7 +768,7 @@ class PRX11EnhancedCollector:
 
 def main():
     """تابع اصلی"""
-    collector = PRX11EnhancedCollector()
+    collector = PRX11PingCollector()
     success = collector.run()
     exit(0 if success else 1)
 
