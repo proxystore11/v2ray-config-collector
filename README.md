@@ -5,174 +5,122 @@
   <img src="https://img.shields.io/badge/Python-3.10-yellow?style=for-the-badge" />
   <img src="https://img.shields.io/badge/CDN-jsDelivr-orange?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Status-Stable-success?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" />
 
 </p>
 
-# PRX11 – Ultra-Light V2Ray Collector (TXT Edition)
+# PRX11 – Fast V2Ray TXT Subscriptions
 
-نسخه سبک‌شده و بسیار سریع PRX11 با خروجی‌های کامل TXT، سازگار با Hiddify، V2RayNG، NekoBox، و GitHub CDN.
-
----
-
-## 🗂 ساختار خروجی
-
-```
-output/
- ├── AUTO_UPDATE.txt
- ├── configs/
- │     └── prx11_summary.json
- └── subscriptions/
-        ├── prx11-hiddify.txt
-        ├── prx11-insta-youto.txt
-        ├── prx11-vmess.txt
-        ├── prx11-vless.txt
-        ├── prx11-ss.txt
-        └── prx11-trojan.txt
-```
+خروجی‌های PRX11 هر چند ساعت خودکار آپدیت می‌شوند و در قالب **TXT** ارائه می‌شوند.  
+سازگار با Hiddify – V2RayNG – NekoBox – ShadowRocket
 
 ---
 
-# 🚀 لینک‌های CDN
-
-به‌جای USERNAME و REPO از نام GitHub خودتان استفاده کنید.
+# 🔗 لینک‌های مستقیم (RAW GitHub)
 
 ### Hiddify (100 configs)
 ```
-https://cdn.jsdelivr.net/gh/USERNAME/REPO/output/subscriptions/prx11-hiddify.txt
+https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-hiddify.txt
 ```
 
 ### Instagram/Youtube Fragment
 ```
-https://cdn.jsdelivr.net/gh/USERNAME/REPO/output/subscriptions/prx11-insta-youto.txt
+https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-insta-youto.txt
 ```
 
 ### VMESS
 ```
-https://cdn.jsdelivr.net/gh/USERNAME/REPO/output/subscriptions/prx11-vmess.txt
+https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-vmess.txt
 ```
 
 ### VLESS
 ```
-https://cdn.jsdelivr.net/gh/USERNAME/REPO/output/subscriptions/prx11-vless.txt
+https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-vless.txt
 ```
 
 ### TROJAN
 ```
-https://cdn.jsdelivr.net/gh/USERNAME/REPO/output/subscriptions/prx11-trojan.txt
+https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-trojan.txt
 ```
 
-### SS
+### Shadowsocks
 ```
-https://cdn.jsdelivr.net/gh/USERNAME/REPO/output/subscriptions/prx11-ss.txt
+https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-ss.txt
 ```
 
 ---
 
-# 📱 QR Codes (Colorful + CDN)
+# 🚀 لینک‌های CDN (jsDelivr)
 
+### Hiddify (100 configs)
+```
+https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-hiddify.txt
+```
+
+### Instagram/Youtube
+```
+https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-insta-youto.txt
+```
+
+### VMESS
+```
+https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-vmess.txt
+```
+
+### VLESS
+```
+https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-vless.txt
+```
+
+### TROJAN
+```
+https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-trojan.txt
+```
+
+### Shadowsocks
+```
+https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-ss.txt
+```
+
+---
+
+# 📱 QR Codes (CDN Optimized)
+
+### Hiddify
 <p align="center">
-  <img src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&bgcolor=2E3192&color=FFFFFF&data=https://cdn.jsdelivr.net/gh/USERNAME/REPO/output/subscriptions/prx11-hiddify.txt" />
+  <img src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&bgcolor=1E3A8A&color=FFFFFF&data=https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-hiddify.txt" />
 </p>
 
-(همین ساختار را برای سایر لینک‌ها تکرار کنید)
+### VMESS
+<p align="center">
+  <img src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&bgcolor=4C1D95&color=FFFFFF&data=https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-vmess.txt" />
+</p>
+
+### VLESS
+<p align="center">
+  <img src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&bgcolor=065F46&color=FFFFFF&data=https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-vless.txt" />
+</p>
+
+### TROJAN
+<p align="center">
+  <img src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&bgcolor=991B1B&color=FFFFFF&data=https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-trojan.txt" />
+</p>
+
+### Shadowsocks
+<p align="center">
+  <img src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&bgcolor=92400E&color=FFFFFF&data=https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-ss.txt" />
+</p>
 
 ---
 
 # 🔄 Auto Update (GitHub Actions)
-سیستم هر ۶ ساعت آپدیت می‌شود و خروجی را به‌صورت خودکار Push می‌کند.
 
-```yaml
-name: PRX11 Auto Update
-on:
-  schedule:
-    - cron: "0 */6 * * *"
-  workflow_dispatch:
-jobs:
-  update:
-    runs-on: ubuntu-latest
-    permissions: { contents: write }
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v4
-      with: { python-version: "3.10" }
-    - run: pip install aiohttp pyyaml
-    - run: python main.py
-    - run: |
-        git config user.name "PRX11 Bot"
-        git config user.email "bot@users.noreply.github.com"
-        git add output/
-        git commit -m "Auto Update" || echo "No changes"
-        git push || echo "No changes"
-```
+سیستم اتوماتیک هر ۶ ساعت فایل‌های خروجی را تولید و Push می‌کند.
 
 ---
 
-# 🌐 GitHub Pages نسخه HTML
-در مسیر:
+# ❤️ پشتیبانی  
+ارتباط با مدیر پروژه:
 ```
-docs/index.html
-```
-
-قرار دهید:
-
-```html
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<title>PRX11 CDN Panel</title>
-<script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-slate-900 text-white p-6">
-
-<div class="max-w-2xl mx-auto text-center">
-  <h1 class="text-3xl font-bold mb-4">PRX11 CDN Panel</h1>
-  <p class="opacity-80 mb-10">لینک‌های سریع مبتنی بر jsDelivr</p>
-
-  <div class="space-y-4">
-    <a href="https://cdn.jsdelivr.net/gh/USERNAME/REPO/output/subscriptions/prx11-hiddify.txt"
-       class="block bg-blue-600 hover:bg-blue-700 px-4 py-3 rounded-lg">Hiddify (100 configs)</a>
-
-    <a href="https://cdn.jsdelivr.net/gh/USERNAME/REPO/output/subscriptions/prx11-insta-youto.txt"
-       class="block bg-pink-600 hover:bg-pink-700 px-4 py-3 rounded-lg">Instagram/Youtube Fragment</a>
-
-    <a href="https://cdn.jsdelivr.net/gh/USERNAME/REPO/output/subscriptions/prx11-vmess.txt"
-       class="block bg-purple-600 hover:bg-purple-700 px-4 py-3 rounded-lg">VMESS</a>
-
-    <a href="https://cdn.jsdelivr.net/gh/USERNAME/REPO/output/subscriptions/prx11-vless.txt"
-       class="block bg-green-600 hover:bg-green-700 px-4 py-3 rounded-lg">VLESS</a>
-
-    <a href="https://cdn.jsdelivr.net/gh/USERNAME/REPO/output/subscriptions/prx11-trojan.txt"
-       class="block bg-red-600 hover:bg-red-700 px-4 py-3 rounded-lg">TROJAN</a>
-
-    <a href="https://cdn.jsdelivr.net/gh/USERNAME/REPO/output/subscriptions/prx11-ss.txt"
-       class="block bg-yellow-600 hover:bg-yellow-700 px-4 py-3 rounded-lg">Shadowsocks</a>
-  </div>
-</div>
-
-</body>
-</html>
+https://t.me/proxystore11
 ```
 
-چیزی شبیه صفحه حرفه‌ای "PRX Store" خواهید داشت.
-
----
-
-# 🔗 Short-ID Redirect System (کوتاه‌کننده لینک)
-
-اگر می‌خواهی لینک‌هایت کوتاه شوند:
-
-### مرحله 1: داخل ریپو پوشه `redirects/` بساز  
-و یک فایل مثل این:
-
-```
-redirects/h.txt
-```
-
-داخلش بنویس:
-
-```
-<!DOCTYPE html>
-<meta http-equiv="refresh" content="0; url=https://cdn.jsdelivr.net/gh/USERNAME/REPO/output/subscriptions/prx11-hiddify.txt">
-```
