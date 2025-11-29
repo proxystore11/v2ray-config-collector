@@ -24,8 +24,8 @@ countries:
 
 settings:
   max_configs: 100
-  timeout: 25
-  ping_timeout: 10
+  timeout: 1000
+  ping_timeout: 1000
   max_workers: 5
   user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 
