@@ -7,120 +7,55 @@
   <img src="https://img.shields.io/badge/Status-Stable-success?style=for-the-badge" />
 
 </p>
+# PRX11 – TXT Subscription Collector
 
-# PRX11 – Fast V2Ray TXT Subscriptions
-
-خروجی‌های PRX11 هر چند ساعت خودکار آپدیت می‌شوند و در قالب **TXT** ارائه می‌شوند.  
-سازگار با Hiddify – V2RayNG – NekoBox – ShadowRocket
+این پروژه خروجی‌های PRX11 را در قالب **TXT** تولید می‌کند و به‌صورت خودکار از طریق GitHub Actions بروزرسانی می‌شود.  
+فایل‌ها از طریق **GitHub RAW** و **jsDelivr CDN** قابل دریافت هستند.
 
 ---
 
-# 🔗 لینک‌های مستقیم (RAW GitHub)
+# 📁 ساختار خروجی
 
-### Hiddify (100 configs)
 ```
-https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-hiddify.txt
-```
-
-### Instagram/Youtube Fragment
-```
-https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-insta-youto.txt
-```
-
-### VMESS
-```
-https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-vmess.txt
-```
-
-### VLESS
-```
-https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-vless.txt
-```
-
-### TROJAN
-```
-https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-trojan.txt
-```
-
-### Shadowsocks
-```
-https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-ss.txt
+output/
+  ├── AUTO_UPDATE.txt
+  ├── configs/
+  │     └── prx11_summary.json
+  └── subscriptions/
+        ├── prx11-hiddify.txt
+        ├── prx11-insta-youto.txt
+        ├── prx11-vmess.txt
+        ├── prx11-vless.txt
+        ├── prx11-trojan.txt
+        └── prx11-ss.txt
 ```
 
 ---
 
-# 🚀 لینک‌های CDN (jsDelivr)
+# 🔗 لینک‌ها (RAW + CDN)
 
-### Hiddify (100 configs)
-```
-https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-hiddify.txt
-```
+## 📌 جدول لینک‌ها
 
-### Instagram/Youtube
-```
-https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-insta-youto.txt
-```
-
-### VMESS
-```
-https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-vmess.txt
-```
-
-### VLESS
-```
-https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-vless.txt
-```
-
-### TROJAN
-```
-https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-trojan.txt
-```
-
-### Shadowsocks
-```
-https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-ss.txt
-```
+| نوع اشتراک | RAW Link | CDN Link |
+|-----------|----------|-----------|
+| **Hiddify (100 configs)** | https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-hiddify.txt | https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-hiddify.txt |
+| **Instagram/Youtube Fragment** | https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-insta-youto.txt | https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-insta-youto.txt |
+| **VMESS** | https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-vmess.txt | https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-vmess.txt |
+| **VLESS** | https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-vless.txt | https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-vless.txt |
+| **TROJAN** | https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-trojan.txt | https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-trojan.txt |
+| **Shadowsocks** | https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-ss.txt | https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-ss.txt |
 
 ---
 
-# 📱 QR Codes (CDN Optimized)
-
-### Hiddify
-<p align="center">
-  <img src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&bgcolor=1E3A8A&color=FFFFFF&data=https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-hiddify.txt" />
-</p>
-
-### VMESS
-<p align="center">
-  <img src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&bgcolor=4C1D95&color=FFFFFF&data=https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-vmess.txt" />
-</p>
-
-### VLESS
-<p align="center">
-  <img src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&bgcolor=065F46&color=FFFFFF&data=https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-vless.txt" />
-</p>
-
-### TROJAN
-<p align="center">
-  <img src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&bgcolor=991B1B&color=FFFFFF&data=https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-trojan.txt" />
-</p>
-
-### Shadowsocks
-<p align="center">
-  <img src="https://api.qrserver.com/v1/create-qr-code/?size=280x280&bgcolor=92400E&color=FFFFFF&data=https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-ss.txt" />
-</p>
-
----
-
-# 🔄 Auto Update (GitHub Actions)
-
-سیستم اتوماتیک هر ۶ ساعت فایل‌های خروجی را تولید و Push می‌کند.
+# 🔄 Auto Update  
+این پروژه به‌صورت خودکار هر چند ساعت خروجی‌ها را بروزرسانی و Commit/Push می‌کند.
 
 ---
 
 # ❤️ پشتیبانی  
-ارتباط با مدیر پروژه:
+ارتباط با توسعه‌دهنده:
 ```
 https://t.me/proxystore11
 ```
+
 
