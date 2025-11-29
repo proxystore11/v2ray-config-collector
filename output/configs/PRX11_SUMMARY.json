@@ -1,24 +1,34 @@
 {
-  "last_update": "2025-11-29T18:19:28.590419",
+  "last_update": "2025-11-29T18:41:04.386189",
   "total_configs": 100,
   "country_stats": {
-    "US": 83,
-    "IR": 5,
-    "BR": 3,
+    "US": 85,
+    "IR": 6,
+    "BR": 2,
     "TR": 2,
-    "RU": 5,
-    "NL": 1,
-    "DE": 1
+    "DE": 1,
+    "RU": 3,
+    "CA": 1
   },
   "protocol_stats": {
     "vless": 100
+  },
+  "ping_stats": {
+    "working": 0,
+    "unknown": 100,
+    "error": 0
   },
   "subscription_files": {
     "all": "PRX11-ALL.txt",
     "vmess": "PRX11-VMESS.txt",
     "vless": "PRX11-VLESS.txt",
     "shadowsocks": "PRX11-SS.txt",
-    "trojan": "PRX11-TROJAN.txt"
+    "trojan": "PRX11-TROJAN.txt",
+    "working": "PRX11-WORKING.txt"
   },
-  "sources_count": 2
+  "sources_count": 2,
+  "ping_services": [
+    "https://api.codebazan.ir/ping/",
+    "https://api.anjoman.server.ir/ping/"
+  ]
 }
