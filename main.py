@@ -1,124 +1,202 @@
 #!/usr/bin/env python3
 
-import asyncio, aiohttp, base64, json, yaml, re, os, hashlib, random
+import asyncio
+import aiohttp
+import base64
+import json
+import yaml
+import re
+import os
+import hashlib
+import random
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
 DEFAULT_CONFIG = {
     "project": {"name": "prx11", "version": "1"},
-    "settings": {"max_configs": 2000, "timeout": 20, "max_workers": 50},
+    "settings": {
+        "max_configs": 2000,
+        "timeout": 20,
+        "max_workers": 50,
+    },
     "subscription_files": {
         "hiddify": "prx11-hiddify.txt",
         "insta": "prx11-insta-youto.txt",
         "vmess": "prx11-vmess.txt",
         "vless": "prx11-vless.txt",
         "ss": "prx11-ss.txt",
-        "trojan": "prx11-trojan.txt"
-    }
+        "trojan": "prx11-trojan.txt",
+    },
 }
 
 HIDDEN_SOURCES = [
+    # vless
     "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL1NvbGlTcGlyaXQvdjJyYXktY29uZmlncy9yZWZzL2hlYWRzL21haW4vUHJvdG9jb2xzL3ZsZXNzLnR4dA==",
+    # vmess
     "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL1NvbGlTcGlyaXQvdjJyYXktY29uZmlncy9yZWZzL2hlYWRzL21haW4vUHJvdG9jb2xzL3ZtZXNzLnR4dA==",
+    # multiple_config.json
     "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL0dGVy1rbm9ja2VyL2dmd19yZXNpc3RfSFRUUFNfcHJveHkvcmVmcy9oZWFkcy9tYWluL211bHRpcGxlX2NvbmZpZy5qc29u",
-    "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL1NvbGlTcGlyaXQvdjJyYXktY29uZmlncy9yZWZzL2hlYWRzL21haW4vUHJvdG9jb2xzL3NzLnR4dA=="
+    # ss
+    "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL1NvbGlTcGlyaXQvdjJyYXktY29uZmlncy9yZWZzL2hlYWRzL21haW4vUHJvdG9jb2xzL3NzLnR4dA==",
+    # trojan
+    "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL1NvbGlTcGlyaXQvdjJyYXktY29uZmlncy9yZWZzL2hlYWRzL21haW4vUHJvdG9jb2xzL3Ryb2phbi50eHQ=",
 ]
 
-INSTAGRAM_FRAGMENT = "https://raw.githubusercontent.com/hiddify/hiddify-app/refs/heads/main/test.configs/fragment"
+INSTAGRAM_FRAGMENT_URL = (
+    "https://raw.githubusercontent.com/hiddify/hiddify-app/refs/heads/main/test.configs/fragment"
+)
 
-EMOJI_POOL = ["🚀","🔥","⚡","🎯","✨","🎉","😍","😎","💎","🌐"]
+EMOJI_POOL = ["🚀", "🔥", "⚡", "🎯", "✨", "🎉", "😍", "😎", "💎", "🌐"]
 
-def load_config():
+
+def load_config() -> dict:
     if not os.path.exists("config.yaml"):
         return DEFAULT_CONFIG
-    with open("config.yaml","r",encoding="utf-8") as f:
-        return DEFAULT_CONFIG | yaml.safe_load(f)
+    with open("config.yaml", "r", encoding="utf-8") as f:
+        user_cfg = yaml.safe_load(f) or {}
+    cfg = DEFAULT_CONFIG.copy()
+    for k, v in user_cfg.items():
+        if k == "subscription_files":
+            cfg["subscription_files"].update(v)
+        else:
+            cfg[k] = v
+    return cfg
 
-def ensure_dirs():
-    os.makedirs("output/subscriptions",exist_ok=True)
-    os.makedirs("output/configs",exist_ok=True)
 
-def decode_b64(s): return base64.b64decode(s).decode()
+def ensure_dirs() -> None:
+    os.makedirs("output/subscriptions", exist_ok=True)
+    os.makedirs("output/configs", exist_ok=True)
 
-def normalize_b64(d):
+
+def decode_b64(s: str) -> str:
+    return base64.b64decode(s).decode("utf-8")
+
+
+def normalize_b64(d: str) -> bytes:
     missing = (-len(d)) % 4
-    if missing: d+="="*missing
+    if missing:
+        d += "=" * missing
     return base64.b64decode(d)
 
-def extract(text):
-    p={
-        "vmess":r"vmess://[A-Za-z0-9+/=]+",
-        "vless":r"vless://[^\s]+",
-        "trojan":r"trojan://[^\s]+",
-        "ss":r"ss://[A-Za-z0-9+/=]+"
+
+def extract_configs(text: str) -> list[dict]:
+    patterns = {
+        "vmess": r"vmess://[A-Za-z0-9+/=]+",
+        "vless": r"vless://[^\s]+",
+        "trojan": r"trojan://[^\s]+",
+        "ss": r"ss://[A-Za-z0-9+/=]+",
     }
-    out=[]
-    for t,pat in p.items():
-        for m in re.findall(pat,text):
-            out.append({"raw":m,"type":t,"hash":hashlib.md5(m.encode()).hexdigest()})
+    out: list[dict] = []
+    for t, pat in patterns.items():
+        for m in re.findall(pat, text):
+            out.append(
+                {
+                    "raw": m.strip(),
+                    "type": t,
+                    "hash": hashlib.md5(m.strip().encode("utf-8")).hexdigest(),
+                }
+            )
     return out
 
-def dedupe(arr):
-    seen=set();res=[]
-    for c in arr:
-        if c["hash"] not in seen:
-            seen.add(c["hash"])
+
+def dedupe(configs: list[dict]) -> list[dict]:
+    seen: set[str] = set()
+    res: list[dict] = []
+    for c in configs:
+        h = c["hash"]
+        if h not in seen:
+            seen.add(h)
             res.append(c)
     return res
 
-def remark(i,project):
-    e1=random.choice(EMOJI_POOL)
-    e2=random.choice(EMOJI_POOL)
-    return f"{e1}join@proxystore11 | freeconfig{e2} | {project} #{i:03d}"
 
-async def process(c,i,project):
-    raw=c["raw"];t=c["type"];r=remark(i,project)
-    if t=="vmess":
+def make_remark() -> str:
+    e1 = random.choice(EMOJI_POOL)
+    e2 = random.choice(EMOJI_POOL)
+    return f"{e1}join@proxystore11 | freeconfig{e2} |"
+
+
+async def process_config(cfg: dict) -> tuple[str, str]:
+    raw = cfg["raw"]
+    t = cfg["type"]
+    r = make_remark()
+    if t == "vmess":
         try:
-            p=raw[8:];d=json.loads(normalize_b64(p))
-            d["ps"]=r
-            np=base64.b64encode(json.dumps(d).encode()).decode().rstrip("=")
-            return "vmess://"+np,t
-        except:
-            return raw,t
+            payload = raw[len("vmess://") :]
+            data = json.loads(normalize_b64(payload).decode("utf-8"))
+            data["ps"] = r
+            new_payload = base64.b64encode(
+                json.dumps(data, ensure_ascii=False).encode("utf-8")
+            ).decode("utf-8")
+            new_payload = new_payload.rstrip("=")
+            return "vmess://" + new_payload, t
+        except Exception:
+            return raw, t
     else:
         from urllib.parse import quote
-        base=raw.split("#")[0]
-        return f"{base}#{quote(r)}",t
 
-async def run():
-    cfg=load_config()
+        base = raw.split("#", 1)[0]
+        return f"{base}#{quote(r)}", t
+
+
+async def run_collector() -> None:
+    cfg = load_config()
     ensure_dirs()
-    timeout=cfg["settings"]["timeout"]
-    maxc=cfg["settings"]["max_configs"]
-    sources=[decode_b64(x) for x in HIDDEN_SOURCES]
 
-    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=timeout)) as s:
-        allc=[]
+    timeout = cfg["settings"]["timeout"]
+    max_configs = cfg["settings"]["max_configs"]
+    sources = [decode_b64(x) for x in HIDDEN_SOURCES]
+
+    async with aiohttp.ClientSession(
+        timeout=aiohttp.ClientTimeout(total=timeout)
+    ) as session:
+        all_configs: list[dict] = []
+
         for url in sources:
             try:
-                async with s.get(url) as r:
-                    if r.status==200:
-                        txt=await r.text()
-                        allc+=extract(txt)
-            except: pass
+                async with session.get(url) as resp:
+                    if resp.status == 200:
+                        text = await resp.text()
+                        configs = extract_configs(text)
+                        all_configs.extend(configs)
+            except Exception:
+                continue
 
-        allc=dedupe(allc)[:maxc]
+        all_configs = dedupe(all_configs)[:max_configs]
 
-        tasks=[process(c,i+1,cfg["project"]["name"]) for i,c in enumerate(allc)]
-        res=await asyncio.gather(*tasks)
+        tasks = [process_config(c) for c in all_configs]
+        results = await asyncio.gather(*tasks)
 
-        vmess=[x[0] for x in res if x[1]=="vmess"]
-        vless=[x[0] for x in res if x[1]=="vless"]
-        ss=[x[0] for x in res if x[1]=="ss"]
-        trojan=[x[0] for x in res if x[1]=="trojan"]
+        vmess = [u for u, t in results if t == "vmess"]
+        vless = [u for u, t in results if t == "vless"]
+        ss = [u for u, t in results if t == "ss"]
+        trojan = [u for u, t in results if t == "trojan"]
 
-        with open("output/subscriptions/"+cfg["subscription_files"]["vmess"],"w") as f: f.write("\n".join(vmess))
-        with open("output/subscriptions/"+cfg["subscription_files"]["vless"],"w") as f: f.write("\n".join(vless))
-        with open("output/subscriptions/"+cfg["subscription_files"]["ss"],"w") as f: f.write("\n".join(ss))
-        with open("output/subscriptions/"+cfg["subscription_files"]["trojan"],"w") as f: f.write("\n".join(trojan))
+        subs = cfg["subscription_files"]
 
-        hhead = (
+        with open(
+            os.path.join("output", "subscriptions", subs["vmess"]), "w", encoding="utf-8"
+        ) as f:
+            f.write("\n".join(vmess))
+
+        with open(
+            os.path.join("output", "subscriptions", subs["vless"]), "w", encoding="utf-8"
+        ) as f:
+            f.write("\n".join(vless))
+
+        with open(
+            os.path.join("output", "subscriptions", subs["ss"]), "w", encoding="utf-8"
+        ) as f:
+            f.write("\n".join(ss))
+
+        with open(
+            os.path.join("output", "subscriptions", subs["trojan"]),
+            "w",
+            encoding="utf-8",
+        ) as f:
+            f.write("\n".join(trojan))
+
+        hiddify_header = (
             "//profile-title: base64:cHJ4MTEtZnJlZWNvbmZpZw==\n"
             "//profile-update-interval: 24\n"
             "//subscription-userinfo: upload=0; download=0; total=10737418240000000; expire=0\n"
@@ -126,34 +204,73 @@ async def run():
             "//profile-web-page-url: https://t.me/proxystore11\n\n"
         )
 
-        with open("output/subscriptions/"+cfg["subscription_files"]["hiddify"],"w") as f:
-            f.write(hhead)
-            f.write("\n".join(vmess+vless+ss+trojan))
+        combined = vmess + vless + ss + trojan
+        hiddify_body = combined[:100]
 
-        async with s.get(INSTAGRAM_FRAGMENT) as r:
-            frag = await r.text()
+        with open(
+            os.path.join("output", "subscriptions", subs["hiddify"]),
+            "w",
+            encoding="utf-8",
+        ) as f:
+            f.write(hiddify_header)
+            f.write("\n".join(hiddify_body))
+
+        try:
+            async with session.get(INSTAGRAM_FRAGMENT_URL) as resp:
+                fragment_text = await resp.text()
+        except Exception:
+            fragment_text = ""
+
+        parts = fragment_text.split("\n\n", 1)
+        if len(parts) == 2:
+            fragment_body = parts[1]
+        else:
+            fragment_body = fragment_text
 
         insta_header = (
             "#profile-title: base64:8J+UpSBGcmFnbWVudCDwn5Sl\n"
             "#profile-update-interval: 24\n"
             "#subscription-userinfo: upload=0; download=0; total=10737418240000000; expire=2546249531\n"
-            "#support-url: https://t.me/hiddify\n"
-            "#profile-web-page-url: https://hiddify.com\n"
+            "#support-url: https://t.me/proxystore11\n"
+            "#profile-web-page-url: https://proxystore11.news\n"
             "#connection-test-url: https://instagram.com\n"
             "#remote-dns-address: https://sky.rethinkdns.com/dns-query\n\n"
         )
 
-        with open("output/subscriptions/"+cfg["subscription_files"]["insta"],"w") as f:
+        with open(
+            os.path.join("output", "subscriptions", subs["insta"]),
+            "w",
+            encoding="utf-8",
+        ) as f:
             f.write(insta_header)
-            f.write(frag)
+            f.write(fragment_body.strip() + "\n")
 
-        now=datetime.now(ZoneInfo("Asia/Tehran")).strftime("%Y-%m-%d %H:%M:%S")
-        with open("output/configs/prx11_summary.json","w") as f:
-            json.dump({"last_update":now,"total":len(res),"version":"1"},f)
+        now_ir = datetime.now(ZoneInfo("Asia/Tehran"))
+        timestamp = now_ir.strftime("%Y-%m-%d %H:%M:%S")
 
-        with open("output/AUTO_UPDATE.txt","w") as f:
-            f.write("Auto Update: "+now+"\n")
+        summary = {
+            "last_update": timestamp,
+            "timezone": "Asia/Tehran",
+            "total_configs": len(results),
+            "version": cfg["project"]["version"],
+        }
 
-def main(): asyncio.run(run())
+        with open(
+            os.path.join("output", "configs", "prx11_summary.json"),
+            "w",
+            encoding="utf-8",
+        ) as f:
+            json.dump(summary, f, ensure_ascii=False, indent=2)
 
-if __name__=="__main__": main()
+        with open(
+            os.path.join("output", "AUTO_UPDATE.txt"), "w", encoding="utf-8"
+        ) as f:
+            f.write(f"Auto Update: {timestamp}\n")
+
+
+def main() -> None:
+    asyncio.run(run_collector())
+
+
+if __name__ == "__main__":
+    main()
