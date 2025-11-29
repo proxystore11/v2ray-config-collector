@@ -1,14 +1,14 @@
 {
-  "last_update": "2025-11-29T18:42:00.121463",
+  "last_update": "2025-11-29T18:46:12.630192",
   "total_configs": 100,
   "country_stats": {
-    "US": 83,
-    "IR": 5,
-    "BR": 3,
+    "US": 85,
+    "IR": 6,
+    "BR": 2,
     "TR": 2,
-    "RU": 5,
-    "NL": 1,
-    "DE": 1
+    "DE": 1,
+    "RU": 3,
+    "CA": 1
   },
   "protocol_stats": {
     "vless": 100
@@ -29,6 +29,6 @@
   "sources_count": 2,
   "ping_services": [
     "https://api.codebazan.ir/ping/",
-    "https://api.anjoman.server.ir/ping/"
+    "https://api.codebazan.ir/ping/"
   ]
 }
