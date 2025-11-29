@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-# 🛡️ PRX11 V2Ray Config Collector - Simple & Reliable Version
-# ✨ فیلترسازی بدون پینگ | عملکرد مطمئن
+# 🛡️ PRX11 V2Ray Config Collector - Secure Version
+# ✨ منابع مخفی | عملکرد بهینه
 
 import os
 import json
@@ -11,11 +11,12 @@ import yaml
 from datetime import datetime
 import hashlib
 
-class PRX11SimpleCollector:
+class PRX11SecureCollector:
     def __init__(self):
         self.config_data = self.load_config()
         self.collected_configs = []
         self.processed_configs = []
+        self.hidden_sources = self.decode_sources()
         
     def load_config(self):
         """بارگذاری تنظیمات از فایل YAML"""
@@ -26,28 +27,27 @@ class PRX11SimpleCollector:
             print(f"⚠️ خطا در بارگذاری config.yaml: {e}")
             return self.get_default_config()
     
+    def decode_sources(self):
+        """دیکد کردن منابع مخفی"""
+        encoded_sources = [
+            "aHR0cHM6Ly90d2lsaWdodC13b29kLTkyMjQubXVqa2R0Z2oud29ya2Vycy5kZXYvYXBpL2NvbmZpZ3M=",
+            "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2VsaXYyLWh1Yi9FTGlWMi1SQVkvcmVmcy9oZWFkcy9tYWluL0NoYW5uZWwtRUxpVjItUmF5LnR4dA=="
+        ]
+        
+        sources = []
+        for encoded in encoded_sources:
+            try:
+                decoded = base64.b64decode(encoded).decode('utf-8')
+                sources.append(decoded)
+            except Exception as e:
+                print(f"⚠️ خطا در دیکد منبع: {e}")
+        
+        return sources
+    
     def get_default_config(self):
         """تنظیمات پیش‌فرض"""
         return {
             'project': {'name': 'PRX11', 'version': '4.0.0'},
-            'sources': {
-                'vmess': [
-                    'https://raw.githubusercontent.com/freev2ray/freev2ray/master/README.md',
-                    'https://raw.githubusercontent.com/eliv2-hub/ELiV2-RAY/refs/heads/main/Channel-ELiV2-Ray.txt',
-                    'https://raw.githubusercontent.com/Farid-Karimi/Config-Collector/main/vmess_iran.txt'
-                ],
-                'vless': [
-                    'https://raw.githubusercontent.com/arshiacomplus/v2rayExtractor/refs/heads/main/vless.html',
-                    'https://raw.githubusercontent.com/Farid-Karimi/Config-Collector/main/mixed_iran.txt'
-                ],
-                'shadowsocks': [
-                    'https://raw.githubusercontent.com/arshiacomplus/v2rayExtractor/refs/heads/main/ss.html',
-                    'https://raw.githubusercontent.com/arshiacomplus/v2rayExtractor/refs/heads/main/mixarshia_ss'
-                ],
-                'trojan': [
-                    'https://raw.githubusercontent.com/v2ray/dist/master/v2ray-configs.txt'
-                ]
-            },
             'settings': {
                 'max_configs': 100,
                 'timeout': 30
@@ -84,7 +84,7 @@ class PRX11SimpleCollector:
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
             }
             
-            print(f"🌐 دریافت {config_type} از: {url}")
+            print(f"🌐 دریافت {config_type} از منبع مخفی")
             response = requests.get(
                 url, 
                 headers=headers, 
@@ -97,48 +97,19 @@ class PRX11SimpleCollector:
             print(f"❌ خطا در دریافت {config_type}: {e}")
             return None
     
-    def collect_from_all_sources(self):
-        """جمع‌آوری کانفیگ‌ها از تمام منابع"""
-        print("\n🎯 شروع جمع‌آوری از منابع...")
+    def collect_from_hidden_sources(self):
+        """جمع‌آوری کانفیگ‌ها از منابع مخفی"""
+        print("\n🎯 شروع جمع‌آوری از منابع مخفی...")
         print("=" * 50)
         
         all_configs = []
         
-        # جمع‌آوری از منابع VMess
-        if 'vmess' in self.config_data['sources']:
-            for url in self.config_data['sources']['vmess']:
-                content = self.make_request(url, "VMess")
-                if content:
-                    configs = self.extract_configs(content, 'vmess')
-                    all_configs.extend(configs)
-                    print(f"✅ VMess: {len(configs)} کانفیگ")
-        
-        # جمع‌آوری از منابع VLess
-        if 'vless' in self.config_data['sources']:
-            for url in self.config_data['sources']['vless']:
-                content = self.make_request(url, "VLess")
-                if content:
-                    configs = self.extract_configs(content, 'vless')
-                    all_configs.extend(configs)
-                    print(f"✅ VLess: {len(configs)} کانفیگ")
-        
-        # جمع‌آوری از منابع Shadowsocks
-        if 'shadowsocks' in self.config_data['sources']:
-            for url in self.config_data['sources']['shadowsocks']:
-                content = self.make_request(url, "Shadowsocks")
-                if content:
-                    configs = self.extract_configs(content, 'ss')
-                    all_configs.extend(configs)
-                    print(f"✅ Shadowsocks: {len(configs)} کانفیگ")
-        
-        # جمع‌آوری از منابع Trojan
-        if 'trojan' in self.config_data['sources']:
-            for url in self.config_data['sources']['trojan']:
-                content = self.make_request(url, "Trojan")
-                if content:
-                    configs = self.extract_configs(content, 'trojan')
-                    all_configs.extend(configs)
-                    print(f"✅ Trojan: {len(configs)} کانفیگ")
+        for url in self.hidden_sources:
+            content = self.make_request(url, "مخفی")
+            if content:
+                configs = self.extract_all_configs(content)
+                all_configs.extend(configs)
+                print(f"✅ منبع مخفی: {len(configs)} کانفیگ")
         
         # حذف duplicates
         self.collected_configs = self.remove_duplicates(all_configs)
@@ -148,17 +119,17 @@ class PRX11SimpleCollector:
         
         return self.collected_configs
     
-    def extract_configs(self, text, config_type):
-        """استخراج کانفیگ‌ها از متن"""
+    def extract_all_configs(self, text):
+        """استخراج همه انواع کانفیگ‌ها از متن"""
         patterns = {
-            'vmess': [r'vmess://[A-Za-z0-9+/=]+'],
-            'vless': [r'vless://[^\s"\']+'],
-            'trojan': [r'trojan://[^\s"\']+'],
-            'ss': [r'ss://[A-Za-z0-9+/=]+']
+            'vmess': r'vmess://[A-Za-z0-9+/=]+',
+            'vless': r'vless://[^\s"\']+',
+            'trojan': r'trojan://[^\s"\']+',
+            'ss': r'ss://[A-Za-z0-9+/=]+'
         }
         
         configs = []
-        for pattern in patterns.get(config_type, []):
+        for config_type, pattern in patterns.items():
             matches = re.findall(pattern, text)
             for match in matches:
                 config_hash = hashlib.md5(match.encode()).hexdigest()
@@ -224,14 +195,7 @@ class PRX11SimpleCollector:
                     
             except Exception as e:
                 print(f"⚠️ خطا در پردازش کانفیگ {i+1}: {e}")
-                # اضافه کردن نسخه اصلی در صورت خطا
-                processed.append({
-                    **config,
-                    'final_url': config['raw_config'],
-                    'country': 'Unknown',
-                    'remark': '❌ خطا در پردازش',
-                    'protocol': config['type']
-                })
+                processed.append(self.create_fallback_config(config, i+1, config['type']))
         
         self.processed_configs = processed
         
@@ -246,21 +210,26 @@ class PRX11SimpleCollector:
         return processed
     
     def process_vmess_config(self, config, country_counters, config_number):
-        """پردازش کانفیگ VMess"""
+        """پردازش کانفیگ VMess - نسخه اصلاح شده"""
         try:
             config_url = config['raw_config']
             encoded = config_url[8:]  # حذف vmess://
             
-            # اضافه کردن padding
-            padding = 4 - len(encoded) % 4
-            if padding != 4:
-                encoded += '=' * padding
+            # اصلاح padding - روش صحیح
+            missing_padding = len(encoded) % 4
+            if missing_padding:
+                encoded += '=' * (4 - missing_padding)
             
-            decoded = base64.b64decode(encoded).decode('utf-8')
-            config_data = json.loads(decoded)
+            try:
+                decoded = base64.b64decode(encoded).decode('utf-8')
+                config_data = json.loads(decoded)
+            except:
+                # اگر decode با padding شکست خورد، بدون padding امتحان کن
+                decoded = base64.b64decode(encoded + '=' * (4 - len(encoded) % 4)).decode('utf-8')
+                config_data = json.loads(decoded)
             
             server_address = config_data.get('add', 'Unknown')
-            country_code = self.detect_country_simple(server_address)
+            country_code = self.detect_country_advanced(server_address)
             
             if country_code not in country_counters:
                 country_counters[country_code] = 0
@@ -290,69 +259,251 @@ class PRX11SimpleCollector:
             
         except Exception as e:
             print(f"⚠️ خطا در پردازش VMess: {e}")
-            # بازگشت به نسخه اصلی در صورت خطا
-            return {
-                **config,
-                'final_url': config['raw_config'],
-                'country': 'Unknown',
-                'remark': 'VMess - Unchanged',
-                'protocol': 'vmess',
-                'config_number': config_number
-            }
+            return self.create_fallback_config(config, config_number, 'vmess')
     
     def process_vless_config(self, config, country_counters, config_number):
-        """پردازش کانفیگ VLess"""
-        country_code = 'US'
-        if country_code not in country_counters:
-            country_counters[country_code] = 0
-        country_counters[country_code] += 1
-        
-        new_remark = self.generate_beautiful_remark(country_code, country_counters[country_code])
-        
-        return {
-            **config,
-            'final_url': config['raw_config'],
-            'country': country_code,
-            'remark': new_remark,
-            'protocol': 'vless',
-            'config_number': config_number
-        }
+        """پردازش کانفیگ VLess - نسخه اصلاح شده"""
+        try:
+            config_url = config['raw_config']
+            parsed = self.parse_vless_url(config_url)
+            
+            if parsed:
+                server_address = parsed['server']
+                country_code = self.detect_country_advanced(server_address)
+                
+                if country_code not in country_counters:
+                    country_counters[country_code] = 0
+                country_counters[country_code] += 1
+                
+                new_remark = self.generate_beautiful_remark(country_code, country_counters[country_code])
+                
+                # ساخت URL جدید با ریمارک به روز شده
+                final_url = self.rebuild_vless_url(config_url, new_remark)
+                
+                return {
+                    **config,
+                    'final_url': final_url,
+                    'country': country_code,
+                    'remark': new_remark,
+                    'server': server_address,
+                    'port': parsed['port'],
+                    'protocol': 'vless',
+                    'config_number': config_number
+                }
+            else:
+                raise Exception("پارس کردن VLess ناموفق")
+                
+        except Exception as e:
+            print(f"⚠️ خطا در پردازش VLess: {e}")
+            return self.create_fallback_config(config, config_number, 'vless')
+    
+    def parse_vless_url(self, url):
+        """پارس کردن URL VLess"""
+        try:
+            # حذف vless://
+            url_content = url[8:]
+            
+            # جدا کردن قسمت‌های مختلف
+            if '#' in url_content:
+                url_parts, remark = url_content.split('#', 1)
+                remark = requests.utils.unquote(remark)
+            else:
+                url_parts, remark = url_content, ""
+                
+            if '@' in url_parts:
+                user_server, server_part = url_parts.split('@', 1)
+            else:
+                return None
+                
+            # جدا کردن سرور و پورت
+            if ':' in server_part and '?' in server_part:
+                server, rest = server_part.split('?', 1)
+                server_parts = server.split(':')
+                if len(server_parts) == 2:
+                    server_address, server_port = server_parts
+                else:
+                    return None
+            else:
+                return None
+                
+            return {
+                'server': server_address,
+                'port': server_port,
+                'remark': remark,
+                'type': 'vless'
+            }
+        except:
+            return None
+    
+    def rebuild_vless_url(self, original_url, new_remark):
+        """بازسازی URL VLess با ریمارک جدید"""
+        try:
+            # حذف vless://
+            url_content = original_url[8:]
+            
+            # جدا کردن بخش اصلی و ریمارک
+            if '#' in url_content:
+                main_part, _ = url_content.split('#', 1)
+            else:
+                main_part = url_content
+            
+            # اضافه کردن ریمارک جدید
+            encoded_remark = requests.utils.quote(new_remark)
+            final_url = f"vless://{main_part}#{encoded_remark}"
+            
+            return final_url
+        except:
+            return original_url
     
     def process_trojan_config(self, config, country_counters, config_number):
-        """پردازش کانفیگ Trojan"""
-        country_code = 'US'
-        if country_code not in country_counters:
-            country_counters[country_code] = 0
-        country_counters[country_code] += 1
-        
-        new_remark = self.generate_beautiful_remark(country_code, country_counters[country_code])
-        
-        return {
-            **config,
-            'final_url': config['raw_config'],
-            'country': country_code,
-            'remark': new_remark,
-            'protocol': 'trojan',
-            'config_number': config_number
-        }
+        """پردازش کانفیگ Trojan - نسخه اصلاح شده"""
+        try:
+            config_url = config['raw_config']
+            parsed = self.parse_trojan_url(config_url)
+            
+            if parsed:
+                server_address = parsed['server']
+                country_code = self.detect_country_advanced(server_address)
+                
+                if country_code not in country_counters:
+                    country_counters[country_code] = 0
+                country_counters[country_code] += 1
+                
+                new_remark = self.generate_beautiful_remark(country_code, country_counters[country_code])
+                
+                # ساخت URL جدید با ریمارک به روز شده
+                final_url = self.rebuild_trojan_url(config_url, new_remark)
+                
+                return {
+                    **config,
+                    'final_url': final_url,
+                    'country': country_code,
+                    'remark': new_remark,
+                    'server': server_address,
+                    'port': parsed['port'],
+                    'protocol': 'trojan',
+                    'config_number': config_number
+                }
+            else:
+                raise Exception("پارس کردن Trojan ناموفق")
+                
+        except Exception as e:
+            print(f"⚠️ خطا در پردازش Trojan: {e}")
+            return self.create_fallback_config(config, config_number, 'trojan')
+    
+    def parse_trojan_url(self, url):
+        """پارس کردن URL Trojan"""
+        try:
+            # حذف trojan://
+            url_content = url[9:]
+            
+            # جدا کردن قسمت‌های مختلف
+            if '#' in url_content:
+                url_parts, remark = url_content.split('#', 1)
+                remark = requests.utils.unquote(remark)
+            else:
+                url_parts, remark = url_content, ""
+                
+            if '@' in url_parts:
+                password_server, server_part = url_parts.split('@', 1)
+            else:
+                return None
+                
+            # جدا کردن سرور و پورت
+            if ':' in server_part and '?' in server_part:
+                server, rest = server_part.split('?', 1)
+                server_parts = server.split(':')
+                if len(server_parts) == 2:
+                    server_address, server_port = server_parts
+                else:
+                    return None
+            elif ':' in server_part:
+                server_parts = server_part.split(':')
+                if len(server_parts) == 2:
+                    server_address, server_port = server_parts
+                else:
+                    return None
+            else:
+                return None
+                
+            return {
+                'server': server_address,
+                'port': server_port,
+                'remark': remark,
+                'type': 'trojan'
+            }
+        except:
+            return None
+    
+    def rebuild_trojan_url(self, original_url, new_remark):
+        """بازسازی URL Trojan با ریمارک جدید"""
+        try:
+            # حذف trojan://
+            url_content = original_url[9:]
+            
+            # جدا کردن بخش اصلی و ریمارک
+            if '#' in url_content:
+                main_part, _ = url_content.split('#', 1)
+            else:
+                main_part = url_content
+            
+            # اضافه کردن ریمارک جدید
+            encoded_remark = requests.utils.quote(new_remark)
+            final_url = f"trojan://{main_part}#{encoded_remark}"
+            
+            return final_url
+        except:
+            return original_url
     
     def process_ss_config(self, config, country_counters, config_number):
-        """پردازش کانفیگ Shadowsocks"""
-        country_code = 'US'
-        if country_code not in country_counters:
-            country_counters[country_code] = 0
-        country_counters[country_code] += 1
-        
-        new_remark = self.generate_beautiful_remark(country_code, country_counters[country_code])
-        
-        return {
-            **config,
-            'final_url': config['raw_config'],
-            'country': country_code,
-            'remark': new_remark,
-            'protocol': 'shadowsocks',
-            'config_number': config_number
-        }
+        """پردازش کانفیگ Shadowsocks - نسخه اصلاح شده"""
+        try:
+            config_url = config['raw_config']
+            
+            # برای SS، کشور را بر اساس الگو تشخیص می‌دهیم
+            country_code = self.detect_country_from_ss(config_url)
+            
+            if country_code not in country_counters:
+                country_counters[country_code] = 0
+            country_counters[country_code] += 1
+            
+            new_remark = self.generate_beautiful_remark(country_code, country_counters[country_code])
+            
+            return {
+                **config,
+                'final_url': config_url,  # SS معمولاً ریمارک ندارد
+                'country': country_code,
+                'remark': new_remark,
+                'protocol': 'shadowsocks',
+                'config_number': config_number
+            }
+                
+        except Exception as e:
+            print(f"⚠️ خطا در پردازش Shadowsocks: {e}")
+            return self.create_fallback_config(config, config_number, 'shadowsocks')
+    
+    def detect_country_from_ss(self, ss_url):
+        """تشخیص کشور از URL Shadowsocks"""
+        try:
+            # دیکد کردن base64
+            encoded = ss_url[5:]  # حذف ss://
+            missing_padding = len(encoded) % 4
+            if missing_padding:
+                encoded += '=' * (4 - missing_padding)
+            
+            decoded = base64.b64decode(encoded).decode('utf-8')
+            
+            # استخراج سرور از decoded string
+            if '@' in decoded:
+                method_pass, server_part = decoded.split('@', 1)
+                server = server_part.split('#')[0] if '#' in server_part else server_part
+                server_address = server.split(':')[0]
+                
+                return self.detect_country_advanced(server_address)
+            
+            return 'US'
+        except:
+            return 'US'
     
     def process_unknown_config(self, config, country_counters, config_number):
         """پردازش کانفیگ‌های ناشناخته"""
@@ -372,64 +523,62 @@ class PRX11SimpleCollector:
             'config_number': config_number
         }
     
-    def detect_country_simple(self, server_address):
-        """تشخیص ساده کشور از دامنه"""
+    def create_fallback_config(self, config, config_number, protocol):
+        """ایجاد کانفیگ fallback در صورت خطا"""
+        country_code = 'US'
+        new_remark = self.generate_beautiful_remark(country_code, config_number)
+        
+        return {
+            **config,
+            'final_url': config['raw_config'],
+            'country': country_code,
+            'remark': f"{new_remark} (Fallback)",
+            'protocol': protocol,
+            'config_number': config_number,
+            'status': 'error'
+        }
+    
+    def detect_country_advanced(self, server_address):
+        """تشخیص پیشرفته کشور"""
         if not server_address or server_address == 'Unknown':
             return 'US'
         
+        # استفاده از countries از config.yaml
+        countries_config = self.config_data.get('countries', {})
+        
+        # اولویت 1: جستجو در TLD
+        tld_match = re.search(r'\.([a-z]{2,3})$', server_address.lower())
+        if tld_match:
+            tld = tld_match.group(1)
+            for country_code in countries_config.keys():
+                if tld == country_code.lower():
+                    return country_code
+        
+        # اولویت 2: کلمات کلیدی در دامنه
         server_lower = server_address.lower()
-        
-        # تشخیص از TLD
-        tld_mapping = {
-            'us': 'US', 'com': 'US', 'net': 'US', 'org': 'US',
-            'de': 'DE', 'fr': 'FR', 'nl': 'NL', 'tr': 'TR',
-            'sg': 'SG', 'jp': 'JP', 'kr': 'KR', 'uk': 'GB',
-            'ca': 'CA', 'hk': 'HK', 'ir': 'IR', 'cn': 'CN',
-            'ru': 'RU', 'br': 'BR', 'in': 'IN'
-        }
-        
-        for tld, country in tld_mapping.items():
-            if server_lower.endswith('.' + tld):
-                return country
-        
-        # تشخیص از کلمات کلیدی
-        keyword_mapping = {
-            'US': ['usa', 'us-', 'united', 'american', 'nyc', 'la'],
-            'DE': ['de-', 'german', 'deutsch', 'frankfurt'],
-            'FR': ['fr-', 'france', 'paris'],
-            'NL': ['nl-', 'netherlands', 'amsterdam'],
-            'TR': ['tr-', 'turkey', 'istanbul'],
-            'SG': ['sg-', 'singapore'],
-            'JP': ['jp-', 'japan', 'tokyo'],
-            'KR': ['kr-', 'korea', 'seoul'],
-            'HK': ['hk-', 'hongkong'],
-            'IR': ['ir-', 'iran', 'tehran']
-        }
-        
-        for country, keywords in keyword_mapping.items():
-            for keyword in keywords:
+        for country_code, country_name in countries_config.items():
+            country_keywords = [
+                country_code.lower(),
+                country_name.split('|')[1].strip().lower() if '|' in country_name else country_name.lower()
+            ]
+            
+            for keyword in country_keywords:
                 if keyword in server_lower:
-                    return country
+                    return country_code
         
+        # پیش‌فرض
         return 'US'
     
     def generate_beautiful_remark(self, country_code, config_number):
-        """تولید ریمارک زیبا"""
-        countries = {
-            'US': '🇺🇸 | آمریکا', 'DE': '🇩🇪 | آلمان', 'FR': '🇫🇷 | فرانسه',
-            'NL': '🇳🇱 | هلند', 'TR': '🇹🇷 | ترکیه', 'SG': '🇸🇬 | سنگاپور',
-            'JP': '🇯🇵 | ژاپن', 'KR': '🇰🇷 | کره', 'GB': '🇬🇧 | انگلیس',
-            'CA': '🇨🇦 | کانادا', 'HK': '🇭🇰 | هنگ‌کنگ', 'IR': '🇮🇷 | ایران',
-            'CN': '🇨🇳 | چین', 'RU': '🇷🇺 | روسیه', 'BR': '🇧🇷 | برزیل',
-            'IN': '🇮🇳 | هند'
-        }
-        
-        country_info = countries.get(country_code, '🇺🇸 | آمریکا')
+        """تولید ریمارک زیبا - نسخه اصلاح شده"""
+        # استفاده از countries از config.yaml
+        countries_config = self.config_data.get('countries', {})
+        country_info = countries_config.get(country_code, '🇺🇸 | آمریکا')
         
         if ' | ' in country_info:
             flag, country_name = country_info.split(' | ', 1)
         else:
-            flag, country_name = '🇺🇸', country_code
+            flag, country_name = '🇺🇸', country_info
         
         project_name = self.config_data.get('remark', {}).get('project_name', 'PRX11')
         
@@ -507,7 +656,8 @@ class PRX11SimpleCollector:
             "total_configs": len(self.processed_configs),
             "country_stats": country_stats,
             "protocol_stats": protocol_stats,
-            "subscription_files": self.config_data['subscription_files']
+            "subscription_files": self.config_data['subscription_files'],
+            "sources_count": len(self.hidden_sources)
         }
         
         try:
@@ -527,17 +677,13 @@ class PRX11SimpleCollector:
         print("📈" * 20)
         
         print(f"\n🔢 کل کانفیگ‌ها: {len(self.processed_configs)}")
+        print(f"🔗 تعداد منابع: {len(self.hidden_sources)}")
         
         print("\n🌍 آمار کشورها:")
         print("-" * 30)
         for country, count in sorted(country_stats.items(), key=lambda x: x[1], reverse=True)[:10]:
-            countries = {
-                'US': '🇺🇸 | آمریکا', 'DE': '🇩🇪 | آلمان', 'FR': '🇫🇷 | فرانسه',
-                'NL': '🇳🇱 | هلند', 'TR': '🇹🇷 | ترکیه', 'SG': '🇸🇬 | سنگاپور',
-                'JP': '🇯🇵 | ژاپن', 'KR': '🇰🇷 | کره', 'GB': '🇬🇧 | انگلیس',
-                'HK': '🇭🇰 | هنگ‌کنگ', 'IR': '🇮🇷 | ایران'
-            }
-            country_name = countries.get(country, country)
+            countries_config = self.config_data.get('countries', {})
+            country_name = countries_config.get(country, country)
             print(f"   {country_name:<20} : {count:>3} کانفیگ")
         
         print("\n🛡️ آمار پروتکل‌ها:")
@@ -552,53 +698,26 @@ class PRX11SimpleCollector:
         
         print("\n" + "✅" * 20)
         print("🚀 پروژه PRX11 با موفقیت تکمیل شد!")
+        print("🔒 منابع تغذیه: مخفی (Base64)")
         print("✅" * 20)
-    
-    def create_sample_configs(self):
-        """ایجاد کانفیگ‌های نمونه برای تست"""
-        print("🔧 ایجاد کانفیگ‌های نمونه برای تست...")
-        
-        sample_configs = [
-            {
-                'raw_config': 'vmess://ewoidiI6ICIyIiwKInBzIjogIkRlbW8gVk1lc3MgMSIsCiJhZGQiOiAidXMtc2VydmVyMS5jb20iLAoicG9ydCI6ICI4MDgwIiwKImlkIjogIjEyMzQ1Njc4OTAiLAoiYWlkIjogIjAiLAoibmV0IjogInRjcCIsCiJ0eXBlIjogIm5vbmUiLAoiaG9zdCI6ICIiLAoicGF0aCI6ICIiLAoidGxzIjogIiIKfQ==',
-                'hash': 'sample_vmess_1',
-                'type': 'vmess',
-                'protocol': 'vmess'
-            },
-            {
-                'raw_config': 'vless://12345678-1234-1234-1234-123456789012@us-server2.com:443?type=tcp&security=tls#Demo%20VLess%201',
-                'hash': 'sample_vless_1', 
-                'type': 'vless',
-                'protocol': 'vless'
-            },
-            {
-                'raw_config': 'ss://YWVzLTI1Ni1nY206cGFzc3dvcmQ=@sg-server1.com:8388#Demo%20SS%201',
-                'hash': 'sample_ss_1',
-                'type': 'ss',
-                'protocol': 'shadowsocks'
-            }
-        ]
-        
-        self.collected_configs = sample_configs
-        print("✅ کانفیگ‌های نمونه ایجاد شدند")
     
     def run(self):
         """اجرای کامل پروژه"""
         print("🎯" * 25)
-        print("🛡️  PRX11 V2Ray Config Collector - Simple Version")
-        print("✨ فیلترسازی مطمئن | بدون پینگ")
+        print("🛡️  PRX11 V2Ray Config Collector - Secure Version")
+        print("✨ منابع مخفی | عملکرد بهینه")
         print("🎯" * 25)
         
         try:
             # ایجاد پوشه‌ها
             self.create_directories()
             
-            # جمع‌آوری کانفیگ‌ها
-            self.collect_from_all_sources()
+            # جمع‌آوری کانفیگ‌ها از منابع مخفی
+            self.collect_from_hidden_sources()
             
             if not self.collected_configs:
-                print("⚠️ هیچ کانفیگی یافت نشد! ایجاد نمونه‌های تست...")
-                self.create_sample_configs()
+                print("❌ هیچ کانفیگی از منابع مخفی یافت نشد!")
+                return False
             
             # پردازش کانفیگ‌ها
             self.process_configs()
@@ -616,12 +735,6 @@ class PRX11SimpleCollector:
             # ذخیره‌سازی گزارش‌ها
             self.save_reports()
             
-            # نمایش لینک‌ها
-            print(f"\n🔗 لینک‌های اشتراک PRX11:")
-            base_url = "https://github.com/proxystore11/v2ray-config-collector/raw/main/output/subscriptions/"
-            for key, filename in self.config_data['subscription_files'].items():
-                print(f"   📄 {base_url}{filename}")
-            
             return True
             
         except Exception as e:
@@ -632,7 +745,7 @@ class PRX11SimpleCollector:
 
 def main():
     """تابع اصلی"""
-    collector = PRX11SimpleCollector()
+    collector = PRX11SecureCollector()
     success = collector.run()
     exit(0 if success else 1)
 
