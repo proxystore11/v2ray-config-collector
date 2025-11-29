@@ -1,5 +1,5 @@
 {
-  "last_update": "2025-11-29T17:44:59.701749",
+  "last_update": "2025-11-29T17:45:34.224994",
   "total_configs": 100,
   "country_stats": {
     "US": 85,
@@ -18,8 +18,7 @@
     "vmess": "PRX11-VMESS.txt",
     "vless": "PRX11-VLESS.txt",
     "shadowsocks": "PRX11-SS.txt",
-    "trojan": "PRX11-TROJAN.txt",
-    "working": "PRX11-WORKING.txt"
+    "trojan": "PRX11-TROJAN.txt"
   },
   "sources_count": 2
 }
