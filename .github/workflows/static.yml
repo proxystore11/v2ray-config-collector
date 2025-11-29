@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<title>PRX11 – Ultra Premium CDN Panel</title>
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Particle Animation -->
+<script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+
+<style>
+
+/* macOS Blur + Noise */
+body {
+  background: #0f172a;
+  background-size: cover;
+  overflow-x: hidden;
+}
+body.light { background: #f5f5f5; }
+
+.noise {
+  position: fixed;
+  inset: 0;
+  opacity: .05;
+  background: url('https://i.imgur.com/8gEpZB8.png');
+  pointer-events: none;
+}
+
+/* Glass Panel */
+.glass {
+  backdrop-filter: blur(18px);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: .4s;
+}
+body.light .glass {
+  background: rgba(0,0,0,.06);
+}
+
+/* PRX11 Logo Animation */
+.logo-pulse {
+  animation: pulse 3s infinite;
+}
+@keyframes pulse {
+  0% { transform: scale(1); opacity: .7; }
+  50% { transform: scale(1.07); opacity: 1; }
+  100% { transform: scale(1); opacity: .7; }
+}
+
+/* 3D Buttons */
+.btn-3d {
+  position: relative;
+  transition: all .25s ease;
+  transform-style: preserve-3d;
+}
+.btn-3d:active {
+  transform: translateY(3px) scale(.96);
+}
+
+/* Wave Hover Animation */
+.wave:hover {
+  box-shadow: 0 0 25px rgba(255,255,255,0.35);
+  transform: translateY(-4px);
+}
+
+/* Multi Themes */
+.theme-green { background: linear-gradient(135deg,#16a34a,#4ade80); }
+.theme-purple { background: linear-gradient(135deg,#7c3aed,#a78bfa); }
+.theme-red { background: linear-gradient(135deg,#dc2626,#fb7185); }
+.theme-ocean { background: linear-gradient(135deg,#0284c7,#22d3ee); }
+
+</style>
+</head>
+
+<body class="text-white min-h-screen flex items-center justify-center p-6 relative">
+
+<div id="particles-js" class="absolute inset-0 -z-10"></div>
+<div class="noise"></div>
+
+<!-- Theme Switch Buttons -->
+<div class="fixed top-4 left-4 space-x-2 flex">
+
+  <button onclick="setTheme('green')" class="px-3 py-2 rounded-xl text-sm theme-green">سبز</button>
+  <button onclick="setTheme('purple')" class="px-3 py-2 rounded-xl text-sm theme-purple">بنفش</button>
+  <button onclick="setTheme('red')" class="px-3 py-2 rounded-xl text-sm theme-red">قرمز</button>
+  <button onclick="setTheme('ocean')" class="px-3 py-2 rounded-xl text-sm theme-ocean">اقیانوسی</button>
+
+  <button onclick="toggleMode()" class="ml-4 glass px-3 py-2 text-sm rounded-xl">
+    🌗 حالت روز/شب
+  </button>
+
+</div>
+
+<!-- MAIN PANEL -->
+<div class="w-full max-w-2xl glass p-8 rounded-3xl shadow-xl">
+
+  <!-- LOGO -->
+  <div class="flex justify-center mb-6">
+    <svg width="130" height="130" viewBox="0 0 512 512" class="logo-pulse drop-shadow-xl">
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#38bdf8"/>
+          <stop offset="100%" stop-color="#a78bfa"/>
+        </linearGradient>
+      </defs>
+      <rect width="512" height="512" rx="120" fill="url(#g)"/>
+      <text x="50%" y="46%" text-anchor="middle" fill="#ffffff" font-size="130" font-weight="700">PRX</text>
+      <text x="50%" y="65%" text-anchor="middle" fill="#e0e7ff" font-size="110" font-weight="700">11</text>
+    </svg>
+  </div>
+
+  <h1 class="text-center text-3xl font-bold mb-2">PRX11 CDN Panel</h1>
+  <p class="text-center opacity-80 mb-10">نسخه پریمیوم | انیمیشن + تم + 3D + QR</p>
+
+  <div class="space-y-12">
+
+    <!-- Hiddify -->
+    <div>
+      <a class="block glass p-4 rounded-xl text-xl font-semibold text-center btn-3d wave"
+         href="https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-hiddify.txt">
+        🌀 اشتراک Hiddify (100)
+      </a>
+      <p class="text-center mt-4">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=190x190&bgcolor=1E3A8A&color=FFFFFF&data=https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-hiddify.txt"
+             class="mx-auto rounded-xl shadow-lg"/>
+      </p>
+    </div>
+
+    <!-- Insta -->
+    <div>
+      <a class="block glass p-4 rounded-xl text-xl text-center btn-3d wave"
+         href="https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-insta-youto.txt">
+        🎬 Instagram / Youtube
+      </a>
+      <p class="text-center mt-4">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=190x190&bgcolor=DB2777&color=FFFFFF&data=https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-insta-youto.txt"
+             class="mx-auto rounded-xl shadow-lg"/>
+      </p>
+    </div>
+
+    <!-- VMESS -->
+    <div>
+      <a class="block glass p-4 rounded-xl text-xl text-center btn-3d wave"
+         href="https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-vmess.txt">
+        🔵 VMESS
+      </a>
+      <p class="text-center mt-4">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=190x190&bgcolor=4C1D95&color=FFFFFF&data=https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-vmess.txt"
+             class="mx-auto rounded-xl shadow-lg"/>
+      </p>
+    </div>
+
+    <!-- VLESS -->
+    <div>
+      <a class="block glass p-4 rounded-xl text-xl text-center btn-3d wave"
+         href="https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-vless.txt">
+        🟩 VLESS
+      </a>
+      <p class="text-center mt-4">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=190x190&bgcolor=065F46&color=FFFFFF&data=https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-vless.txt"
+             class="mx-auto rounded-xl shadow-lg"/>
+      </p>
+    </div>
+
+    <!-- TROJAN -->
+    <div>
+      <a class="block glass p-4 rounded-xl text-xl text-center btn-3d wave"
+         href="https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-trojan.txt">
+        🔺 TROJAN
+      </a>
+      <p class="text-center mt-4">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=190x190&bgcolor=B91C1C&color=FFFFFF&data=https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-trojan.txt"
+             class="mx-auto rounded-xl shadow-lg"/>
+      </p>
+    </div>
+
+    <!-- SS -->
+    <div>
+      <a class="block glass p-4 rounded-xl text-xl text-center btn-3d wave"
+         href="https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-ss.txt">
+        ⚪ Shadowsocks
+      </a>
+      <p class="text-center mt-4">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=190x190&bgcolor=92400E&color=FFFFFF&data=https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-ss.txt"
+             class="mx-auto rounded-xl shadow-lg"/>
+      </p>
+    </div>
+
+  </div>
+
+  <p class="text-center opacity-50 text-sm mt-12">PRX11 – Ultra Premium Edition ©2025</p>
+
+</div>
+
+
+<!-- Theme Script -->
+<script>
+function setTheme(color) {
+  document.querySelectorAll('.glass').forEach(e=>{
+    e.style.borderColor="rgba(255,255,255,0.2)";
+  });
+  switch(color){
+    case 'green': document.body.style.background = "linear-gradient(135deg,#064e3b,#064e3b)"; break;
+    case 'purple': document.body.style.background = "linear-gradient(135deg,#3b0764,#1e1b4b)"; break;
+    case 'red': document.body.style.background = "linear-gradient(135deg,#450a0a,#7f1d1d)"; break;
+    case 'ocean': document.body.style.background = "linear-gradient(135deg,#0c4a6e,#0e7490)"; break;
+  }
+}
+
+function toggleMode(){
+  document.body.classList.toggle("light");
+}
+</script>
+
+<!-- Particle Animation Init -->
+<script>
+particlesJS("particles-js",{
+  "particles":{
+    "number":{"value":80,"density":{"enable":true,"value_area":900}},
+    "color":{"value":"#ffffff"},
+    "shape":{"type":"circle"},
+    "opacity":{"value":0.5,"random":true},
+    "size":{"value":3,"random":true},
+    "line_linked":{"enable":false},
+    "move":{"speed":1,"direction":"none","out_mode":"out"}
+  },
+  "interactivity":{
+    "events":{"onhover":{"enable":true,"mode":"bubble"}},
+    "modes":{"bubble":{"distance":200,"size":6}}
+  },
+  "retina_detect":true
+});
+</script>
+
+</body>
+</html>
