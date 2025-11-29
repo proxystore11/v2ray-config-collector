@@ -1,7 +1,7 @@
 project:
   name: "PRX11"
-  version: "4.1.0"
-  description: "🛡️ پروژه امن جمع‌آوری کانفیگ‌های V2Ray | منابع مخفی"
+  version: "4.2.0"
+  description: "🛡️ پروژه پیشرفته جمع‌آوری کانفیگ‌های V2Ray با پینگ"
   author: "PRX11 Team"
 
 countries:
@@ -25,10 +25,12 @@ countries:
 settings:
   max_configs: 100
   timeout: 25
+  ping_timeout: 10
+  max_workers: 5
   user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 
 remark:
-  format: "{flag} | {country} | {config_number:02d} | {project_name}"
+  format: "{flag} | {country} | {config_number:02d} | {ping}ms | {project_name}"
   project_name: "PRX11"
 
 subscription_files:
@@ -37,3 +39,4 @@ subscription_files:
   vless: "PRX11-VLESS.txt"
   shadowsocks: "PRX11-SS.txt"
   trojan: "PRX11-TROJAN.txt"
+  working: "PRX11-WORKING.txt"
