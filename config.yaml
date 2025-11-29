@@ -1,18 +1,16 @@
 project:
-  name: "PRX11"
-  version: "9.1.0"
+  name: "prx11"
+  version: "1"
 
 settings:
-  max_configs: 500
+  max_configs: 2000
   timeout: 20
   max_workers: 50
 
-remark:
-  project_name: "PRX11"
-
 subscription_files:
-  all: "PRX11-ALL.txt"
-  vmess: "PRX11-VMESS.txt"
-  vless: "PRX11-VLESS.txt"
-  shadowsocks: "PRX11-SS.txt"
-  trojan: "PRX11-TROJAN.txt"
+  hiddify: "prx11-hiddify.txt"
+  insta: "prx11-insta-youto.txt"
+  vmess: "prx11-vmess.txt"
+  vless: "prx11-vless.txt"
+  ss: "prx11-ss.txt"
+  trojan: "prx11-trojan.txt"
