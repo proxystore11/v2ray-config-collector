@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-# 🛡️ PRX11 V2Ray Config Collector - Secure Version
-# ✨ منابع مخفی | عملکرد بهینه
+# 🛡️ PRX11 V2Ray Config Collector - Enhanced Version
+# ✨ پارسر پیشرفته VLess | عملکرد بهینه
 
 import os
 import json
@@ -10,8 +10,9 @@ import re
 import yaml
 from datetime import datetime
 import hashlib
+from urllib.parse import urlparse, parse_qs, unquote
 
-class PRX11SecureCollector:
+class PRX11EnhancedCollector:
     def __init__(self):
         self.config_data = self.load_config()
         self.collected_configs = []
@@ -31,7 +32,7 @@ class PRX11SecureCollector:
         """دیکد کردن منابع مخفی"""
         encoded_sources = [
             "aHR0cHM6Ly90d2lsaWdodC13b29kLTkyMjQubXVqa2R0Z2oud29ya2Vycy5kZXYvYXBpL2NvbmZpZ3M=",
-            "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2VsaXYyLWh1Yi9FTGlWMi1SQVkvcmVmcy9oZWFkcy9tYWluL0NoYW5uZWwtRUxpVjItUmF5LnR4dA=="
+            "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2VsaXYyLWh1Yi9FTElWMi1SQVkvcmVmcy9oZWFkcy9tYWluL0NoYW5uZWwtRUxJVjItUmF5LnR4dA=="
         ]
         
         sources = []
@@ -123,8 +124,8 @@ class PRX11SecureCollector:
         """استخراج همه انواع کانفیگ‌ها از متن"""
         patterns = {
             'vmess': r'vmess://[A-Za-z0-9+/=]+',
-            'vless': r'vless://[^\s"\']+',
-            'trojan': r'trojan://[^\s"\']+',
+            'vless': r'vless://[A-Za-z0-9%\.\-_@?&=#:]+',
+            'trojan': r'trojan://[A-Za-z0-9%\.\-_@?&=#:]+',
             'ss': r'ss://[A-Za-z0-9+/=]+'
         }
         
@@ -178,9 +179,9 @@ class PRX11SecureCollector:
                 if config['type'] == 'vmess':
                     processed_config = self.process_vmess_config(config, country_counters, i+1)
                 elif config['type'] == 'vless':
-                    processed_config = self.process_vless_config(config, country_counters, i+1)
+                    processed_config = self.process_vless_config_enhanced(config, country_counters, i+1)
                 elif config['type'] == 'trojan':
-                    processed_config = self.process_trojan_config(config, country_counters, i+1)
+                    processed_config = self.process_trojan_config_enhanced(config, country_counters, i+1)
                 elif config['type'] == 'ss':
                     processed_config = self.process_ss_config(config, country_counters, i+1)
                 else:
@@ -210,12 +211,12 @@ class PRX11SecureCollector:
         return processed
     
     def process_vmess_config(self, config, country_counters, config_number):
-        """پردازش کانفیگ VMess - نسخه اصلاح شده"""
+        """پردازش کانفیگ VMess"""
         try:
             config_url = config['raw_config']
             encoded = config_url[8:]  # حذف vmess://
             
-            # اصلاح padding - روش صحیح
+            # اصلاح padding
             missing_padding = len(encoded) % 4
             if missing_padding:
                 encoded += '=' * (4 - missing_padding)
@@ -224,7 +225,6 @@ class PRX11SecureCollector:
                 decoded = base64.b64decode(encoded).decode('utf-8')
                 config_data = json.loads(decoded)
             except:
-                # اگر decode با padding شکست خورد، بدون padding امتحان کن
                 decoded = base64.b64decode(encoded + '=' * (4 - len(encoded) % 4)).decode('utf-8')
                 config_data = json.loads(decoded)
             
@@ -236,7 +236,6 @@ class PRX11SecureCollector:
             country_counters[country_code] += 1
             country_config_number = country_counters[country_code]
             
-            # تولید ریمارک زیبا
             new_remark = self.generate_beautiful_remark(country_code, country_config_number)
             config_data['ps'] = new_remark
             
@@ -261,13 +260,15 @@ class PRX11SecureCollector:
             print(f"⚠️ خطا در پردازش VMess: {e}")
             return self.create_fallback_config(config, config_number, 'vmess')
     
-    def process_vless_config(self, config, country_counters, config_number):
-        """پردازش کانفیگ VLess - نسخه اصلاح شده"""
+    def process_vless_config_enhanced(self, config, country_counters, config_number):
+        """پردازش کانفیگ VLess - نسخه پیشرفته"""
         try:
             config_url = config['raw_config']
-            parsed = self.parse_vless_url(config_url)
             
-            if parsed:
+            # پارس کردن URL با روش پیشرفته
+            parsed = self.parse_vless_url_enhanced(config_url)
+            
+            if parsed and parsed.get('server'):
                 server_address = parsed['server']
                 country_code = self.detect_country_advanced(server_address)
                 
@@ -278,7 +279,7 @@ class PRX11SecureCollector:
                 new_remark = self.generate_beautiful_remark(country_code, country_counters[country_code])
                 
                 # ساخت URL جدید با ریمارک به روز شده
-                final_url = self.rebuild_vless_url(config_url, new_remark)
+                final_url = self.rebuild_vless_url_enhanced(config_url, new_remark)
                 
                 return {
                     **config,
@@ -286,177 +287,167 @@ class PRX11SecureCollector:
                     'country': country_code,
                     'remark': new_remark,
                     'server': server_address,
-                    'port': parsed['port'],
+                    'port': parsed.get('port', '443'),
                     'protocol': 'vless',
                     'config_number': config_number
                 }
             else:
-                raise Exception("پارس کردن VLess ناموفق")
+                # اگر پارس کردن شکست خورد، از روش ساده استفاده کن
+                return self.process_vless_simple(config, country_counters, config_number)
                 
         except Exception as e:
             print(f"⚠️ خطا در پردازش VLess: {e}")
-            return self.create_fallback_config(config, config_number, 'vless')
+            return self.process_vless_simple(config, country_counters, config_number)
     
-    def parse_vless_url(self, url):
-        """پارس کردن URL VLess"""
+    def parse_vless_url_enhanced(self, url):
+        """پارس کردن URL VLess - نسخه پیشرفته"""
         try:
             # حذف vless://
             url_content = url[8:]
             
-            # جدا کردن قسمت‌های مختلف
+            # جدا کردن بخش اصلی و fragment (ریمارک)
             if '#' in url_content:
-                url_parts, remark = url_content.split('#', 1)
-                remark = requests.utils.unquote(remark)
+                main_part, fragment = url_content.split('#', 1)
+                remark = unquote(fragment)
             else:
-                url_parts, remark = url_content, ""
-                
-            if '@' in url_parts:
-                user_server, server_part = url_parts.split('@', 1)
+                main_part, remark = url_content, ""
+            
+            # جدا کردن UUID و سرور
+            if '@' in main_part:
+                uuid_part, server_part = main_part.split('@', 1)
             else:
                 return None
-                
+            
             # جدا کردن سرور و پورت
-            if ':' in server_part and '?' in server_part:
-                server, rest = server_part.split('?', 1)
-                server_parts = server.split(':')
-                if len(server_parts) == 2:
-                    server_address, server_port = server_parts
+            server_parts = server_part.split(':')
+            if len(server_parts) >= 2:
+                server_address = server_parts[0]
+                port_part = server_parts[1]
+                
+                # جدا کردن پورت از پارامترها
+                if '?' in port_part:
+                    port, params = port_part.split('?', 1)
                 else:
-                    return None
+                    port, params = port_part, ""
             else:
                 return None
-                
+            
             return {
                 'server': server_address,
-                'port': server_port,
+                'port': port,
+                'uuid': uuid_part,
+                'params': params,
                 'remark': remark,
                 'type': 'vless'
             }
-        except:
+        except Exception as e:
+            print(f"⚠️ خطا در پارس VLess: {e}")
             return None
     
-    def rebuild_vless_url(self, original_url, new_remark):
-        """بازسازی URL VLess با ریمارک جدید"""
+    def rebuild_vless_url_enhanced(self, original_url, new_remark):
+        """بازسازی URL VLess با ریمارک جدید - نسخه پیشرفته"""
         try:
-            # حذف vless://
-            url_content = original_url[8:]
+            parsed = self.parse_vless_url_enhanced(original_url)
+            if not parsed:
+                return original_url
             
-            # جدا کردن بخش اصلی و ریمارک
-            if '#' in url_content:
-                main_part, _ = url_content.split('#', 1)
-            else:
-                main_part = url_content
-            
-            # اضافه کردن ریمارک جدید
+            # ساخت URL جدید
             encoded_remark = requests.utils.quote(new_remark)
-            final_url = f"vless://{main_part}#{encoded_remark}"
+            final_url = f"vless://{parsed['uuid']}@{parsed['server']}:{parsed['port']}"
+            
+            if parsed['params']:
+                final_url += f"?{parsed['params']}"
+            
+            final_url += f"#{encoded_remark}"
             
             return final_url
         except:
             return original_url
     
-    def process_trojan_config(self, config, country_counters, config_number):
-        """پردازش کانفیگ Trojan - نسخه اصلاح شده"""
+    def process_vless_simple(self, config, country_counters, config_number):
+        """پردازش ساده VLess در صورت شکست روش پیشرفته"""
         try:
             config_url = config['raw_config']
-            parsed = self.parse_trojan_url(config_url)
             
-            if parsed:
-                server_address = parsed['server']
-                country_code = self.detect_country_advanced(server_address)
-                
-                if country_code not in country_counters:
-                    country_counters[country_code] = 0
-                country_counters[country_code] += 1
-                
-                new_remark = self.generate_beautiful_remark(country_code, country_counters[country_code])
-                
-                # ساخت URL جدید با ریمارک به روز شده
-                final_url = self.rebuild_trojan_url(config_url, new_remark)
-                
-                return {
-                    **config,
-                    'final_url': final_url,
-                    'country': country_code,
-                    'remark': new_remark,
-                    'server': server_address,
-                    'port': parsed['port'],
-                    'protocol': 'trojan',
-                    'config_number': config_number
-                }
+            # استخراج سرور با regex
+            server_match = re.search(r'@([^:#?]+)', config_url)
+            if server_match:
+                server_address = server_match.group(1)
             else:
-                raise Exception("پارس کردن Trojan ناموفق")
+                server_address = 'unknown'
+            
+            country_code = self.detect_country_advanced(server_address)
+            
+            if country_code not in country_counters:
+                country_counters[country_code] = 0
+            country_counters[country_code] += 1
+            
+            new_remark = self.generate_beautiful_remark(country_code, country_counters[country_code])
+            
+            # اضافه کردن ریمارک به URL
+            if '#' in config_url:
+                base_url = config_url.split('#')[0]
+                final_url = f"{base_url}#{requests.utils.quote(new_remark)}"
+            else:
+                final_url = f"{config_url}#{requests.utils.quote(new_remark)}"
+            
+            return {
+                **config,
+                'final_url': final_url,
+                'country': country_code,
+                'remark': new_remark,
+                'server': server_address,
+                'protocol': 'vless',
+                'config_number': config_number
+            }
+                
+        except Exception as e:
+            print(f"⚠️ خطا در پردازش ساده VLess: {e}")
+            return self.create_fallback_config(config, config_number, 'vless')
+    
+    def process_trojan_config_enhanced(self, config, country_counters, config_number):
+        """پردازش کانفیگ Trojan - نسخه پیشرفته"""
+        try:
+            config_url = config['raw_config']
+            
+            # استخراج سرور با regex
+            server_match = re.search(r'@([^:#?]+)', config_url)
+            if server_match:
+                server_address = server_match.group(1)
+            else:
+                server_address = 'unknown'
+            
+            country_code = self.detect_country_advanced(server_address)
+            
+            if country_code not in country_counters:
+                country_counters[country_code] = 0
+            country_counters[country_code] += 1
+            
+            new_remark = self.generate_beautiful_remark(country_code, country_counters[country_code])
+            
+            # اضافه کردن ریمارک به URL
+            if '#' in config_url:
+                base_url = config_url.split('#')[0]
+                final_url = f"{base_url}#{requests.utils.quote(new_remark)}"
+            else:
+                final_url = f"{config_url}#{requests.utils.quote(new_remark)}"
+            
+            return {
+                **config,
+                'final_url': final_url,
+                'country': country_code,
+                'remark': new_remark,
+                'server': server_address,
+                'protocol': 'trojan',
+                'config_number': config_number
+            }
                 
         except Exception as e:
             print(f"⚠️ خطا در پردازش Trojan: {e}")
             return self.create_fallback_config(config, config_number, 'trojan')
     
-    def parse_trojan_url(self, url):
-        """پارس کردن URL Trojan"""
-        try:
-            # حذف trojan://
-            url_content = url[9:]
-            
-            # جدا کردن قسمت‌های مختلف
-            if '#' in url_content:
-                url_parts, remark = url_content.split('#', 1)
-                remark = requests.utils.unquote(remark)
-            else:
-                url_parts, remark = url_content, ""
-                
-            if '@' in url_parts:
-                password_server, server_part = url_parts.split('@', 1)
-            else:
-                return None
-                
-            # جدا کردن سرور و پورت
-            if ':' in server_part and '?' in server_part:
-                server, rest = server_part.split('?', 1)
-                server_parts = server.split(':')
-                if len(server_parts) == 2:
-                    server_address, server_port = server_parts
-                else:
-                    return None
-            elif ':' in server_part:
-                server_parts = server_part.split(':')
-                if len(server_parts) == 2:
-                    server_address, server_port = server_parts
-                else:
-                    return None
-            else:
-                return None
-                
-            return {
-                'server': server_address,
-                'port': server_port,
-                'remark': remark,
-                'type': 'trojan'
-            }
-        except:
-            return None
-    
-    def rebuild_trojan_url(self, original_url, new_remark):
-        """بازسازی URL Trojan با ریمارک جدید"""
-        try:
-            # حذف trojan://
-            url_content = original_url[9:]
-            
-            # جدا کردن بخش اصلی و ریمارک
-            if '#' in url_content:
-                main_part, _ = url_content.split('#', 1)
-            else:
-                main_part = url_content
-            
-            # اضافه کردن ریمارک جدید
-            encoded_remark = requests.utils.quote(new_remark)
-            final_url = f"trojan://{main_part}#{encoded_remark}"
-            
-            return final_url
-        except:
-            return original_url
-    
     def process_ss_config(self, config, country_counters, config_number):
-        """پردازش کانفیگ Shadowsocks - نسخه اصلاح شده"""
+        """پردازش کانفیگ Shadowsocks"""
         try:
             config_url = config['raw_config']
             
@@ -471,7 +462,7 @@ class PRX11SecureCollector:
             
             return {
                 **config,
-                'final_url': config_url,  # SS معمولاً ریمارک ندارد
+                'final_url': config_url,
                 'country': country_code,
                 'remark': new_remark,
                 'protocol': 'shadowsocks',
@@ -485,22 +476,11 @@ class PRX11SecureCollector:
     def detect_country_from_ss(self, ss_url):
         """تشخیص کشور از URL Shadowsocks"""
         try:
-            # دیکد کردن base64
-            encoded = ss_url[5:]  # حذف ss://
-            missing_padding = len(encoded) % 4
-            if missing_padding:
-                encoded += '=' * (4 - missing_padding)
-            
-            decoded = base64.b64decode(encoded).decode('utf-8')
-            
-            # استخراج سرور از decoded string
-            if '@' in decoded:
-                method_pass, server_part = decoded.split('@', 1)
-                server = server_part.split('#')[0] if '#' in server_part else server_part
-                server_address = server.split(':')[0]
-                
+            # استخراج سرور با regex
+            server_match = re.search(r'@([^:#?]+)', ss_url)
+            if server_match:
+                server_address = server_match.group(1)
                 return self.detect_country_advanced(server_address)
-            
             return 'US'
         except:
             return 'US'
@@ -540,10 +520,9 @@ class PRX11SecureCollector:
     
     def detect_country_advanced(self, server_address):
         """تشخیص پیشرفته کشور"""
-        if not server_address or server_address == 'Unknown':
+        if not server_address or server_address == 'Unknown' or server_address == 'unknown':
             return 'US'
         
-        # استفاده از countries از config.yaml
         countries_config = self.config_data.get('countries', {})
         
         # اولویت 1: جستجو در TLD
@@ -566,12 +545,10 @@ class PRX11SecureCollector:
                 if keyword in server_lower:
                     return country_code
         
-        # پیش‌فرض
         return 'US'
     
     def generate_beautiful_remark(self, country_code, config_number):
-        """تولید ریمارک زیبا - نسخه اصلاح شده"""
-        # استفاده از countries از config.yaml
+        """تولید ریمارک زیبا"""
         countries_config = self.config_data.get('countries', {})
         country_info = countries_config.get(country_code, '🇺🇸 | آمریکا')
         
@@ -704,8 +681,8 @@ class PRX11SecureCollector:
     def run(self):
         """اجرای کامل پروژه"""
         print("🎯" * 25)
-        print("🛡️  PRX11 V2Ray Config Collector - Secure Version")
-        print("✨ منابع مخفی | عملکرد بهینه")
+        print("🛡️  PRX11 V2Ray Config Collector - Enhanced Version")
+        print("✨ پارسر پیشرفته VLess | عملکرد بهینه")
         print("🎯" * 25)
         
         try:
@@ -745,7 +722,7 @@ class PRX11SecureCollector:
 
 def main():
     """تابع اصلی"""
-    collector = PRX11SecureCollector()
+    collector = PRX11EnhancedCollector()
     success = collector.run()
     exit(0 if success else 1)
 
