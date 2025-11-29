@@ -1,272 +1,159 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-PRX11 – PRO Edition
-ویژگی‌ها:
-- Merge همه پروتکل‌ها
-- Sort خروجی‌ها
-- فشرده‌سازی پیشرفته gzip + zstd
-- تولید لینک‌های CDN
-- بدون پینگ / بدون GeoIP
-"""
 
-import asyncio
-import aiohttp
-import base64
-import json
-import yaml
-import re
-import os
-import hashlib
-import gzip
-import random
-import zlib
+import asyncio, aiohttp, base64, json, yaml, re, os, hashlib, random
 from datetime import datetime
-from typing import Dict, Any, List
 from zoneinfo import ZoneInfo
 
-
-# ======================================================
-# تنظیمات پیش‌فرض PRO
-# ======================================================
 DEFAULT_CONFIG = {
-    "project": {"name": "PRX11", "version": "10.0-PRO"},
-    "settings": {
-        "max_configs": 1000,
-        "timeout": 25,
-        "max_workers": 50
-    },
-    "remark": {"project_name": "PRX11"},
+    "project": {"name": "prx11", "version": "1"},
+    "settings": {"max_configs": 2000, "timeout": 20, "max_workers": 50},
     "subscription_files": {
-        "all": "PRX11-ALL.txt",
-        "vmess": "PRX11-VMESS.txt",
-        "vless": "PRX11-VLESS.txt",
-        "shadowsocks": "PRX11-SS.txt",
-        "trojan": "PRX11-TROJAN.txt"
-    },
+        "hiddify": "prx11-hiddify.txt",
+        "insta": "prx11-insta-youto.txt",
+        "vmess": "prx11-vmess.txt",
+        "vless": "prx11-vless.txt",
+        "ss": "prx11-ss.txt",
+        "trojan": "prx11-trojan.txt"
+    }
 }
 
-
-# ======================================================
-# منابع مخفی PRO
-# Base64 شده – طبق درخواست
-# ======================================================
-
 HIDDEN_SOURCES = [
-    # vless
     "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL1NvbGlTcGlyaXQvdjJyYXktY29uZmlncy9yZWZzL2hlYWRzL21haW4vUHJvdG9jb2xzL3ZsZXNzLnR4dA==",
-    # vmess
     "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL1NvbGlTcGlyaXQvdjJyYXktY29uZmlncy9yZWZzL2hlYWRzL21haW4vUHJvdG9jb2xzL3ZtZXNzLnR4dA==",
-    # json
     "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL0dGVy1rbm9ja2VyL2dmd19yZXNpc3RfSFRUUFNfcHJveHkvcmVmcy9oZWFkcy9tYWluL211bHRpcGxlX2NvbmZpZy5qc29u",
-    # ss
-    "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL1NvbGlTcGlyaXQvdjJyYXktY29uZmlncy9yZWZzL2hlYWRzL21haW4vUHJvdG9jb2xzL3NzLnR4dA==",
-    # warp
-    "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2lyY2ZzcGFjZS93YXJwc3ViL21haW4vZXhwb3J0L3dhcnA=",
+    "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL1NvbGlTcGlyaXQvdjJyYXktY29uZmlncy9yZWZzL2hlYWRzL21haW4vUHJvdG9jb2xzL3NzLnR4dA=="
 ]
 
+INSTAGRAM_FRAGMENT = "https://raw.githubusercontent.com/hiddify/hiddify-app/refs/heads/main/test.configs/fragment"
 
-# ======================================================
-# ابزار
-# ======================================================
-def load_config() -> Dict[str, Any]:
+EMOJI_POOL = ["🚀","🔥","⚡","🎯","✨","🎉","😍","😎","💎","🌐"]
+
+def load_config():
     if not os.path.exists("config.yaml"):
         return DEFAULT_CONFIG
-
-    with open("config.yaml", "r", encoding="utf-8") as f:
+    with open("config.yaml","r",encoding="utf-8") as f:
         return DEFAULT_CONFIG | yaml.safe_load(f)
 
-
 def ensure_dirs():
-    os.makedirs("output/subscriptions", exist_ok=True)
-    os.makedirs("output/configs", exist_ok=True)
-    os.makedirs("output", exist_ok=True)
+    os.makedirs("output/subscriptions",exist_ok=True)
+    os.makedirs("output/configs",exist_ok=True)
 
+def decode_b64(s): return base64.b64decode(s).decode()
 
-def decode_b64(s: str) -> str:
-    return base64.b64decode(s).decode("utf-8")
+def normalize_b64(d):
+    missing = (-len(d)) % 4
+    if missing: d+="="*missing
+    return base64.b64decode(d)
 
-
-def normalize_b64(data: str) -> bytes:
-    missing = (-len(data)) % 4
-    if missing:
-        data += "=" * missing
-    return base64.b64decode(data)
-
-
-# ======================================================
-# استخراج کانفیگ‌ها
-# ======================================================
-def extract_configs(text: str) -> List[Dict[str, str]]:
-    PATTERNS = {
-        "vmess": r"vmess://[A-Za-z0-9+/=]+",
-        "vless": r"vless://[A-Za-z0-9%\.\-_@?&=#:]+",
-        "trojan": r"trojan://[A-Za-z0-9%\.\-_@?&=#:]+",
-        "ss": r"ss://[A-Za-z0-9+/=]+",
+def extract(text):
+    p={
+        "vmess":r"vmess://[A-Za-z0-9+/=]+",
+        "vless":r"vless://[^\s]+",
+        "trojan":r"trojan://[^\s]+",
+        "ss":r"ss://[A-Za-z0-9+/=]+"
     }
-
-    out = []
-    for typ, pat in PATTERNS.items():
-        for m in re.findall(pat, text):
-            out.append({
-                "raw": m,
-                "type": typ,
-                "hash": hashlib.md5(m.encode()).hexdigest()
-            })
+    out=[]
+    for t,pat in p.items():
+        for m in re.findall(pat,text):
+            out.append({"raw":m,"type":t,"hash":hashlib.md5(m.encode()).hexdigest()})
     return out
 
-
-def dedupe(arr: List[Dict[str, str]]) -> List[Dict[str, str]]:
-    seen = set()
-    out = []
+def dedupe(arr):
+    seen=set();res=[]
     for c in arr:
         if c["hash"] not in seen:
             seen.add(c["hash"])
-            out.append(c)
-    return out
+            res.append(c)
+    return res
 
+def remark(i,project):
+    e1=random.choice(EMOJI_POOL)
+    e2=random.choice(EMOJI_POOL)
+    return f"{e1}join@proxystore11 | freeconfig{e2} | {project} #{i:03d}"
 
-# ======================================================
-# ریمارک پیشرفته PRO
-# ======================================================
-EMOJI_POOL = ["🚀", "🔥", "⚡", "🌐", "✨", "🎯", "🎉", "😎", "😍", "💎"]
-
-def build_remark(idx: int, project: str) -> str:
-    e1 = random.choice(EMOJI_POOL)
-    e2 = random.choice(EMOJI_POOL)
-    return f"{e1}join@proxystore11 | freeconfig{e2} | {project} #{idx:03d}"
-
-
-# ======================================================
-# پردازش هر کانفیگ
-# ======================================================
-async def process_config(cfg: Dict[str, str], idx: int, project: str):
-    raw = cfg["raw"]
-    typ = cfg["type"]
-    remark = build_remark(idx, project)
-
-    if typ == "vmess":
+async def process(c,i,project):
+    raw=c["raw"];t=c["type"];r=remark(i,project)
+    if t=="vmess":
         try:
-            payload = raw[len("vmess://"):]
-            data = json.loads(normalize_b64(payload))
-            data["ps"] = remark
-            new_payload = base64.b64encode(json.dumps(data).encode()).decode().rstrip("=")
-            final = "vmess://" + new_payload
+            p=raw[8:];d=json.loads(normalize_b64(p))
+            d["ps"]=r
+            np=base64.b64encode(json.dumps(d).encode()).decode().rstrip("=")
+            return "vmess://"+np,t
         except:
-            final = raw
+            return raw,t
     else:
         from urllib.parse import quote
-        base = raw.split("#")[0]
-        final = f"{base}#{quote(remark)}"
+        base=raw.split("#")[0]
+        return f"{base}#{quote(r)}",t
 
-    return {
-        "final": final,
-        "protocol": typ,
-        "remark": remark,
-    }
-
-
-# ======================================================
-# Collect + Sort + Save PRO
-# ======================================================
-async def run_collector():
-    cfg = load_config()
+async def run():
+    cfg=load_config()
     ensure_dirs()
+    timeout=cfg["settings"]["timeout"]
+    maxc=cfg["settings"]["max_configs"]
+    sources=[decode_b64(x) for x in HIDDEN_SOURCES]
 
-    timeout = cfg["settings"]["timeout"]
-    max_configs = cfg["settings"]["max_configs"]
-
-    sources = [decode_b64(x) for x in HIDDEN_SOURCES]
-
-    all_configs = []
-
-    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=timeout)) as session:
-        print("📥 دریافت کانفیگ‌ها...")
-
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=timeout)) as s:
+        allc=[]
         for url in sources:
             try:
-                async with session.get(url) as r:
-                    if r.status == 200:
-                        text = await r.text()
-                        cfgs = extract_configs(text)
-                        all_configs.extend(cfgs)
-                        print(f"✔ {url}: {len(cfgs)}")
-                    else:
-                        print(f"✖ {url} → {r.status}")
-            except Exception as e:
-                print(f"✖ خطا در {url}: {e}")
+                async with s.get(url) as r:
+                    if r.status==200:
+                        txt=await r.text()
+                        allc+=extract(txt)
+            except: pass
 
-    all_configs = dedupe(all_configs)
-    print(f"✔ کانفیگ یکتا: {len(all_configs)}")
+        allc=dedupe(allc)[:maxc]
 
-    subset = all_configs[:max_configs]
+        tasks=[process(c,i+1,cfg["project"]["name"]) for i,c in enumerate(allc)]
+        res=await asyncio.gather(*tasks)
 
-    tasks = [process_config(c, i + 1, cfg["remark"]["project_name"]) for i, c in enumerate(subset)]
-    results = await asyncio.gather(*tasks, return_exceptions=False)
+        vmess=[x[0] for x in res if x[1]=="vmess"]
+        vless=[x[0] for x in res if x[1]=="vless"]
+        ss=[x[0] for x in res if x[1]=="ss"]
+        trojan=[x[0] for x in res if x[1]=="trojan"]
 
-    # مرتب‌سازی PRO:
-    results_sorted = sorted(results, key=lambda r: (r["protocol"], r["remark"]))
+        with open("output/subscriptions/"+cfg["subscription_files"]["vmess"],"w") as f: f.write("\n".join(vmess))
+        with open("output/subscriptions/"+cfg["subscription_files"]["vless"],"w") as f: f.write("\n".join(vless))
+        with open("output/subscriptions/"+cfg["subscription_files"]["ss"],"w") as f: f.write("\n".join(ss))
+        with open("output/subscriptions/"+cfg["subscription_files"]["trojan"],"w") as f: f.write("\n".join(trojan))
 
-    # خروجی‌ها
-    all_urls = [x["final"] for x in results_sorted]
-    vmess_urls = [x["final"] for x in results_sorted if x["protocol"] == "vmess"]
-    vless_urls = [x["final"] for x in results_sorted if x["protocol"] == "vless"]
-    trojan_urls = [x["final"] for x in results_sorted if x["protocol"] == "trojan"]
-    ss_urls = [x["final"] for x in results_sorted if x["protocol"] == "ss"]
+        hhead = (
+            "//profile-title: base64:cHJ4MTEtZnJlZWNvbmZpZw==\n"
+            "//profile-update-interval: 24\n"
+            "//subscription-userinfo: upload=0; download=0; total=10737418240000000; expire=0\n"
+            "//support-url: https://t.me/proxystore11\n"
+            "//profile-web-page-url: https://t.me/proxystore11\n\n"
+        )
 
-    # ذخیره
-    out = cfg["subscription_files"]
+        with open("output/subscriptions/"+cfg["subscription_files"]["hiddify"],"w") as f:
+            f.write(hhead)
+            f.write("\n".join(vmess+vless+ss+trojan))
 
-    def save(name: str, lines: List[str]):
-        with open(f"output/subscriptions/{name}", "w", encoding="utf-8") as f:
-            f.write("\n".join(lines))
+        async with s.get(INSTAGRAM_FRAGMENT) as r:
+            frag = await r.text()
 
-    save(out["all"], all_urls)
-    save(out["vmess"], vmess_urls)
-    save(out["vless"], vless_urls)
-    save(out["shadowsocks"], ss_urls)
-    save(out["trojan"], trojan_urls)
+        insta_header = (
+            "#profile-title: base64:8J+UpSBGcmFnbWVudCDwn5Sl\n"
+            "#profile-update-interval: 24\n"
+            "#subscription-userinfo: upload=0; download=0; total=10737418240000000; expire=2546249531\n"
+            "#support-url: https://t.me/hiddify\n"
+            "#profile-web-page-url: https://hiddify.com\n"
+            "#connection-test-url: https://instagram.com\n"
+            "#remote-dns-address: https://sky.rethinkdns.com/dns-query\n\n"
+        )
 
-    # ======================================================
-    # فشرده‌سازی PRO
-    # ======================================================
-    text_joined = "\n".join(all_urls).encode()
+        with open("output/subscriptions/"+cfg["subscription_files"]["insta"],"w") as f:
+            f.write(insta_header)
+            f.write(frag)
 
-    # gzip
-    with gzip.open("output/subscriptions/PRX11-ALL.gz", "wb") as f:
-        f.write(text_joined)
+        now=datetime.now(ZoneInfo("Asia/Tehran")).strftime("%Y-%m-%d %H:%M:%S")
+        with open("output/configs/prx11_summary.json","w") as f:
+            json.dump({"last_update":now,"total":len(res),"version":"1"},f)
 
-    # zstd-like (فشرده‌سازی با zlib سطح بالا)
-    compressed = zlib.compress(text_joined, 9)
-    with open("output/subscriptions/PRX11-ALL.zst", "wb") as f:
-        f.write(compressed)
+        with open("output/AUTO_UPDATE.txt","w") as f:
+            f.write("Auto Update: "+now+"\n")
 
-    # ======================================================
-    # Summary + Iran Time
-    # ======================================================
-    now_ir = datetime.now(ZoneInfo("Asia/Tehran"))
-    timestamp = now_ir.strftime("%Y-%m-%d %H:%M:%S")
+def main(): asyncio.run(run())
 
-    summary = {
-        "last_update": timestamp,
-        "timezone": "Asia/Tehran",
-        "total": len(results_sorted),
-        "project": cfg["project"],
-    }
-
-    with open("output/configs/PRX11_SUMMARY.json", "w", encoding="utf-8") as f:
-        json.dump(summary, f, indent=2, ensure_ascii=False)
-
-    with open("output/AUTO_UPDATE.txt", "w", encoding="utf-8") as f:
-        f.write(f"Auto Update: {timestamp}\n")
-
-    print("✔ پایان کار PRO.")
-    print(f"🕒 آخرین آپدیت (ایران): {timestamp}")
-
-
-def main():
-    asyncio.run(run_collector())
-
-
-if __name__ == "__main__":
-    main()
+if __name__=="__main__": main()
