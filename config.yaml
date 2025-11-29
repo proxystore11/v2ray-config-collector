@@ -1,25 +1,8 @@
 project:
   name: "PRX11"
-  version: "4.0.0"
-  description: "🛡️ پروژه پیشرفته جمع‌آوری و فیلترسازی کانفیگ‌های V2Ray | PRX11"
+  version: "4.1.0"
+  description: "🛡️ پروژه امن جمع‌آوری کانفیگ‌های V2Ray | منابع مخفی"
   author: "PRX11 Team"
-
-sources:
-  vmess:
-    - "https://raw.githubusercontent.com/freev2ray/freev2ray/master/README.md"
-    - "https://raw.githubusercontent.com/eliv2-hub/ELiV2-RAY/refs/heads/main/Channel-ELiV2-Ray.txt"
-    - "https://raw.githubusercontent.com/Farid-Karimi/Config-Collector/main/vmess_iran.txt"
-
-  vless:
-    - "https://raw.githubusercontent.com/arshiacomplus/v2rayExtractor/refs/heads/main/vless.html"
-    - "https://raw.githubusercontent.com/Farid-Karimi/Config-Collector/main/mixed_iran.txt"
-
-  shadowsocks:
-    - "https://raw.githubusercontent.com/arshiacomplus/v2rayExtractor/refs/heads/main/ss.html"
-    - "https://raw.githubusercontent.com/arshiacomplus/v2rayExtractor/refs/heads/main/mixarshia_ss"
-
-  trojan:
-    - "https://raw.githubusercontent.com/v2ray/dist/master/v2ray-configs.txt"
 
 countries:
   US: "🇺🇸 | آمریکا"
@@ -41,14 +24,11 @@ countries:
 
 settings:
   max_configs: 100
-  timeout: 20
-  ping_timeout: 5
+  timeout: 25
   user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-  enable_ip_api: true
-  min_ping_success: 3  # حداقل پینگ موفق برای ثبت
 
 remark:
-  format: "{flag} | {country} | {config_number:02d} | {project_name} | {ping}ms"
+  format: "{flag} | {country} | {config_number:02d} | {project_name}"
   project_name: "PRX11"
 
 subscription_files:
@@ -57,4 +37,3 @@ subscription_files:
   vless: "PRX11-VLESS.txt"
   shadowsocks: "PRX11-SS.txt"
   trojan: "PRX11-TROJAN.txt"
-  working: "PRX11-WORKING.txt"
