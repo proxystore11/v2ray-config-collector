@@ -22,7 +22,7 @@ class PRX11PingCollector:
         self.hidden_sources = self.decode_sources()
         self.ping_services = [
             "https://api.codebazan.ir/ping/",
-            "https://api.anjoman.server.ir/ping/"  # سرویس پینگ جایگزین
+            "https://api.codebazan.ir/ping/"  # سرویس پینگ جایگزین
         ]
         self.ipinfo_service = "https://api.codebazan.ir/ipinfo/"
         
