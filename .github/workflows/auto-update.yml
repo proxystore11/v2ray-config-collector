@@ -1,56 +1,46 @@
-name: 🚀 Auto Update PRX11 Configs
+# در فایل GitHub Actions workflow
+name: Auto Update PRX11
 
 on:
   schedule:
-    - cron: '0 */6 * * *'
+    - cron: '0 */6 * * *'  # هر ۶ ساعت
   workflow_dispatch:
-  push:
-    branches: [ main ]
-
-permissions:
-  contents: write
 
 jobs:
   update-configs:
     runs-on: ubuntu-latest
     
     steps:
-    - name: 📥 Checkout repository
+    - name: Checkout repository
       uses: actions/checkout@v4
-      
-    - name: 🐍 Set up Python
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0  # دریافت تاریخچه کامل
+
+    - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.10'
-        
-    - name: 📦 Install dependencies
+
+    - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install requests pyyaml
-        
-    - name: 🚀 Run PRX11 Config Collector
-      run: |
-        python main.py
-        
-    - name: 📊 Check Results
-      run: |
-        echo "=== بررسی نتایج ==="
-        ls -la output/subscriptions/
-        echo "=== محتوای فایل‌ها ==="
-        for file in output/subscriptions/*.txt; do
-          echo "📄 $file:"
-          wc -l < "$file"
-        done
-        
-    - name: 💾 Commit and Push
+        pip install -r requirements.txt
+
+    - name: Run PRX11 Collector
+      run: python main.py
+
+    - name: Configure Git
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add output/
-        if git diff --staged --quiet; then
-          echo "📝 هیچ تغییری برای commit وجود ندارد"
-        else
-          git commit -m "🤖 Auto-update PRX11: $(date +'%Y-%m-%d %H:%M')"
-          git push
-          echo "✅ تغییرات ذخیره شدند"
-        fi
+
+    - name: Pull latest changes
+      run: |
+        git pull origin main --rebase
+
+    - name: Commit and push changes
+      run: |
+        git add .
+        git commit -m "🤖 Auto-update PRX11: $(date +'%Y-%m-%d %H:%M')"
+        git push origin main
