@@ -1,45 +1,27 @@
 <p align="center">
-
-  <img src="https://img.shields.io/badge/PRX11-Version_1-blue?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Auto--Update-Enabled-brightgreen?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Python-3.10-yellow?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/PRX11-Premium-blue?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/TXT-Subscriptions-yellow?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Auto_Update-Enabled-brightgreen?style=for-the-badge" />
   <img src="https://img.shields.io/badge/CDN-jsDelivr-orange?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Status-Stable-success?style=for-the-badge" />
-
 </p>
-# PRX11 – TXT Subscription Collector
-
-این پروژه خروجی‌های PRX11 را در قالب **TXT** تولید می‌کند و به‌صورت خودکار از طریق GitHub Actions بروزرسانی می‌شود.  
-فایل‌ها از طریق **GitHub RAW** و **jsDelivr CDN** قابل دریافت هستند.
 
 ---
 
-# 📁 ساختار خروجی
-
-```
-output/
-  ├── AUTO_UPDATE.txt
-  ├── configs/
-  │     └── prx11_summary.json
-  └── subscriptions/
-        ├── prx11-hiddify.txt
-        ├── prx11-insta-youto.txt
-        ├── prx11-vmess.txt
-        ├── prx11-vless.txt
-        ├── prx11-trojan.txt
-        └── prx11-ss.txt
-```
+# 🚀 PRX11 – TXT Subscription Collector
+اشتراک‌های V2Ray در قالب **TXT**  
+سازگار با Hiddify، V2RayNG، Nekobox  
+بروزرسانی خودکار چندبار در روز توسط GitHub Actions.
 
 ---
 
 # 🔗 لینک‌ها (RAW + CDN)
 
-## 📌 جدول لینک‌ها
+## 📁 جدول لینک‌ها
 
-| نوع اشتراک | RAW Link | CDN Link |
-|-----------|----------|-----------|
-| **Hiddify (100 configs)** | https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-hiddify.txt | https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-hiddify.txt |
-| **Instagram/Youtube Fragment** | https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-insta-youto.txt | https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-insta-youto.txt |
+| نوع اشتراک | RAW | CDN |
+|-----------|------|------|
+| **Hiddify (100)** | https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-hiddify.txt | https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-hiddify.txt |
+| **Instagram / YouTube** | https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-insta-youto.txt | https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-insta-youto.txt |
 | **VMESS** | https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-vmess.txt | https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-vmess.txt |
 | **VLESS** | https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-vless.txt | https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-vless.txt |
 | **TROJAN** | https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-trojan.txt | https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-trojan.txt |
@@ -47,15 +29,50 @@ output/
 
 ---
 
-# 🔄 Auto Update  
-این پروژه به‌صورت خودکار هر چند ساعت خروجی‌ها را بروزرسانی و Commit/Push می‌کند.
+# ☕ حمایت مالی (Donate)
+
+### CoffeeBede:
+<a href="https://www.coffeebede.com/miladfaryad1">
+  <img src="https://coffeebede.ir/DashboardTemplateV2/app-assets/images/banner/default-yellow.svg" width="260"/>
+</a>
 
 ---
 
-# ❤️ پشتیبانی  
-ارتباط با توسعه‌دهنده:
+# 💰 کیف پول‌ها (Wallets)
+
+لطفاً آدرس‌ها را اینجا قرار دهید:
+
+```
+USDT (TRC20): 
+USDT (ERC20):
+BTC:
+ETH:
+TON:
+DOGE:
+LTC:
+```
+
+---
+
+# 📞 ارتباط با من
+
+### کانال تلگرام:
 ```
 https://t.me/proxystore11
 ```
 
+### پی‌وی تلگرام:
+```
+https://t.me/proxystoreadmin
+```
 
+### اینستاگرام:
+```
+miladfaryad1
+```
+
+---
+
+<p align="center">
+  ساخته شده با ❤️ توسط <b>PRX11</b>
+</p>
