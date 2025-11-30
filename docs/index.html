@@ -135,7 +135,6 @@
     .btn-trojan  { background: linear-gradient(135deg,#f97373,#ef4444); }
     .btn-ss      { background: linear-gradient(135deg,#facc15,#fb923c); }
 
-    /* QR styling */
     .qr-box img {
       border-radius: 18px;
       box-shadow: 0 18px 40px rgba(15,23,42,0.7);
@@ -143,22 +142,51 @@
     body.theme-ios .qr-box img {
       box-shadow: 0 14px 30px rgba(15,23,42,0.3);
     }
+
+    .copy-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 11px;
+    }
+    .copy-input {
+      flex: 1;
+      background: rgba(15,23,42,0.8);
+      border-radius: 999px;
+      padding: 6px 10px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      direction: ltr;
+      font-family: monospace;
+    }
+    body.theme-ios .copy-input {
+      background: rgba(15,23,42,0.08);
+      color: #020617;
+    }
+    .copy-btn {
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 11px;
+      background: rgba(59,130,246,0.85);
+      color: #f9fafb;
+      cursor: pointer;
+      white-space: nowrap;
+    }
   </style>
 </head>
 
 <body class="theme-neon text-white flex items-center justify-center p-6">
 
-<!-- Particles Background -->
 <div id="particles-js" class="fixed inset-0 -z-10"></div>
 <div class="noise"></div>
 
-<!-- Dynamic Island -->
 <div class="island">
   <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
   <span>PRX11 • Auto Update • CDN</span>
 </div>
 
-<!-- Theme Controls -->
 <div class="fixed top-4 right-4 flex flex-col gap-2 z-20 text-xs">
   <button onclick="setTheme('neon')" class="px-3 py-1 rounded-full bg-sky-500/80 hover:bg-sky-400 text-white">
     🎛 Neon Cyberpunk
@@ -168,10 +196,8 @@
   </button>
 </div>
 
-<!-- Main Panel -->
 <div class="w-full max-w-2xl glass rounded-3xl shadow-2xl p-8 relative z-10">
 
-  <!-- Center Logo -->
   <div class="flex justify-center mb-6">
     <svg width="130" height="130" viewBox="0 0 512 512" class="logo-pulse">
       <defs>
@@ -206,6 +232,22 @@
           class="mx-auto"
         />
       </div>
+      <div class="mt-3 space-y-2 text-xs">
+        <div class="copy-box">
+          <span>RAW</span>
+          <div class="copy-input" id="raw-hiddify">
+https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-hiddify.txt
+          </div>
+          <button class="copy-btn" onclick="copyText('raw-hiddify')">کپی</button>
+        </div>
+        <div class="copy-box">
+          <span>CDN</span>
+          <div class="copy-input" id="cdn-hiddify">
+https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-hiddify.txt
+          </div>
+          <button class="copy-btn" onclick="copyText('cdn-hiddify')">کپی</button>
+        </div>
+      </div>
     </div>
 
     <!-- Insta / YouTube -->
@@ -220,6 +262,22 @@
           alt="Insta QR"
           class="mx-auto"
         />
+      </div>
+      <div class="mt-3 space-y-2 text-xs">
+        <div class="copy-box">
+          <span>RAW</span>
+          <div class="copy-input" id="raw-insta">
+https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-insta-youto.txt
+          </div>
+          <button class="copy-btn" onclick="copyText('raw-insta')">کپی</button>
+        </div>
+        <div class="copy-box">
+          <span>CDN</span>
+          <div class="copy-input" id="cdn-insta">
+https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-insta-youto.txt
+          </div>
+          <button class="copy-btn" onclick="copyText('cdn-insta')">کپی</button>
+        </div>
       </div>
     </div>
 
@@ -236,6 +294,22 @@
           class="mx-auto"
         />
       </div>
+      <div class="mt-3 space-y-2 text-xs">
+        <div class="copy-box">
+          <span>RAW</span>
+          <div class="copy-input" id="raw-vmess">
+https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-vmess.txt
+          </div>
+          <button class="copy-btn" onclick="copyText('raw-vmess')">کپی</button>
+        </div>
+        <div class="copy-box">
+          <span>CDN</span>
+          <div class="copy-input" id="cdn-vmess">
+https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-vmess.txt
+          </div>
+          <button class="copy-btn" onclick="copyText('cdn-vmess')">کپی</button>
+        </div>
+      </div>
     </div>
 
     <!-- VLESS -->
@@ -250,6 +324,22 @@
           alt="VLESS QR"
           class="mx-auto"
         />
+      </div>
+      <div class="mt-3 space-y-2 text-xs">
+        <div class="copy-box">
+          <span>RAW</span>
+          <div class="copy-input" id="raw-vless">
+https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-vless.txt
+          </div>
+          <button class="copy-btn" onclick="copyText('raw-vless')">کپی</button>
+        </div>
+        <div class="copy-box">
+          <span>CDN</span>
+          <div class="copy-input" id="cdn-vless">
+https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-vless.txt
+          </div>
+          <button class="copy-btn" onclick="copyText('cdn-vless')">کپی</button>
+        </div>
       </div>
     </div>
 
@@ -266,6 +356,22 @@
           class="mx-auto"
         />
       </div>
+      <div class="mt-3 space-y-2 text-xs">
+        <div class="copy-box">
+          <span>RAW</span>
+          <div class="copy-input" id="raw-trojan">
+https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-trojan.txt
+          </div>
+          <button class="copy-btn" onclick="copyText('raw-trojan')">کپی</button>
+        </div>
+        <div class="copy-box">
+          <span>CDN</span>
+          <div class="copy-input" id="cdn-trojan">
+https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-trojan.txt
+          </div>
+          <button class="copy-btn" onclick="copyText('cdn-trojan')">کپی</button>
+        </div>
+      </div>
     </div>
 
     <!-- SS -->
@@ -281,19 +387,75 @@
           class="mx-auto"
         />
       </div>
+      <div class="mt-3 space-y-2 text-xs">
+        <div class="copy-box">
+          <span>RAW</span>
+          <div class="copy-input" id="raw-ss">
+https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-ss.txt
+          </div>
+          <button class="copy-btn" onclick="copyText('raw-ss')">کپی</button>
+        </div>
+        <div class="copy-box">
+          <span>CDN</span>
+          <div class="copy-input" id="cdn-ss">
+https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-ss.txt
+          </div>
+          <button class="copy-btn" onclick="copyText('cdn-ss')">کپی</button>
+        </div>
+      </div>
     </div>
 
   </div>
 
-  <p class="text-center text-xs opacity-60 mt-10">
-    PRX11 – Auto Updated via GitHub Actions
-  </p>
+  <!-- Support Section -->
+  <div class="mt-14 text-center">
+
+    <h2 class="text-xl font-bold mb-4">حمایت مالی</h2>
+
+    <a href="https://www.coffeebede.com/miladfaryad1" target="_blank">
+      <img src="https://coffeebede.ir/DashboardTemplateV2/app-assets/images/banner/default-yellow.svg"
+           class="mx-auto w-64 rounded-xl shadow-xl hover:scale-105 transition"/>
+    </a>
+
+    <h3 class="text-lg font-semibold mt-6 mb-2">کیف پول‌ها</h3>
+    <pre class="glass p-4 rounded-xl text-left text-sm leading-7 whitespace-pre-line">
+USDT (TRC20): 
+USDT (ERC20):
+BTC:
+ETH:
+TON:
+DOGE:
+LTC:
+    </pre>
+
+    <h3 class="text-lg font-semibold mt-8 mb-3">شبکه‌های اجتماعی</h3>
+
+    <div class="flex flex-wrap justify-center gap-4 text-sm">
+
+      <a href="https://t.me/proxystore11" target="_blank"
+         class="glass px-4 py-2 rounded-xl hover:bg-white/10 transition">
+        📢 کانال تلگرام
+      </a>
+
+      <a href="https://t.me/proxystoreadmin" target="_blank"
+         class="glass px-4 py-2 rounded-xl hover:bg-white/10 transition">
+        👤 پی‌وی مدیریت
+      </a>
+
+      <a href="https://instagram.com/miladfaryad1" target="_blank"
+         class="glass px-4 py-2 rounded-xl hover:bg-white/10 transition">
+        📸 اینستاگرام
+      </a>
+
+    </div>
+
+    <p class="text-center text-xs opacity-60 mt-8">
+      PRX11 – Auto Updated via GitHub Actions
+    </p>
+
+  </div>
 
 </div>
-
-<!-- Audio: Hover / Click (می‌توانی src را با فایل خودت عوض کنی) -->
-<audio id="hoverSound" src="" preload="auto"></audio>
-<audio id="clickSound" src="" preload="auto"></audio>
 
 <script>
   function setTheme(mode) {
@@ -306,26 +468,15 @@
     }
   }
 
-  // Sound Effects (در صورت افزودن src برای audio)
-  const hoverSound = document.getElementById('hoverSound');
-  const clickSound = document.getElementById('clickSound');
+  function copyText(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const text = el.textContent.trim();
+    navigator.clipboard.writeText(text).then(() => {
+      alert("کپی شد:\n" + text);
+    }).catch(()=>{});
+  }
 
-  document.querySelectorAll('.btn-sub').forEach(btn => {
-    btn.addEventListener('mouseenter', () => {
-      if (hoverSound && hoverSound.src) {
-        hoverSound.currentTime = 0;
-        hoverSound.play().catch(()=>{});
-      }
-    });
-    btn.addEventListener('click', () => {
-      if (clickSound && clickSound.src) {
-        clickSound.currentTime = 0;
-        clickSound.play().catch(()=>{});
-      }
-    });
-  });
-
-  // Particles (Photon-like background)
   particlesJS("particles-js",{
     "particles":{
       "number":{"value":80,"density":{"enable":true,"value_area":800}},
