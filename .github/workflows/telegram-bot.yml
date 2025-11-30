@@ -1,0 +1,27 @@
+name: Run PRX11 Telegram Bot
+
+on:
+  workflow_dispatch:
+
+jobs:
+  bot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          pip install -r bot/requirements.txt
+
+      - name: Run Telegram Bot
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CDN_BASE: https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/
+        run: |
+          python bot/bot.py
