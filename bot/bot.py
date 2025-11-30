@@ -1,74 +1,154 @@
 import os
-from telegram import Update
+import qrcode
+import io
+from telegram import (
+    Update,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    InputFile
+)
 from telegram.ext import (
-    ApplicationBuilder, CommandHandler, ContextTypes
+    ApplicationBuilder,
+    CommandHandler,
+    MessageHandler,
+    CallbackQueryHandler,
+    ContextTypes,
+    filters
 )
 
-CDN_BASE = os.getenv(
-    "CDN_BASE",
-    "https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/"
-)
+CDN_BASE = "https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/"
 
 SUB_LINKS = {
-    "hiddify": CDN_BASE + "prx11-hiddify.txt",
-    "insta": CDN_BASE + "prx11-insta-youto.txt",
-    "vmess": CDN_BASE + "prx11-vmess.txt",
-    "vless": CDN_BASE + "prx11-vless.txt",
-    "ss": CDN_BASE + "prx11-ss.txt",
-    "trojan": CDN_BASE + "prx11-trojan.txt",
+    "hiddify": ("🌀 Hiddify (100)", CDN_BASE + "prx11-hiddify.txt"),
+    "insta": ("🎬 Instagram/YouTube", CDN_BASE + "prx11-insta-youto.txt"),
+    "vmess": ("🔵 VMESS", CDN_BASE + "prx11-vmess.txt"),
+    "vless": ("🟩 VLESS", CDN_BASE + "prx11-vless.txt"),
+    "ss": ("⚪ Shadowsocks", CDN_BASE + "prx11-ss.txt"),
+    "trojan": ("🔺 TROJAN", CDN_BASE + "prx11-trojan.txt"),
 }
 
+# --------------- KEYBOARDS ----------------
+
+def main_menu():
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton(name, callback_data=key)]
+        for key, (name, _) in SUB_LINKS.items()
+    ] + [
+        [InlineKeyboardButton("📦 Send All Links", callback_data="all")],
+        [InlineKeyboardButton("📄 دریافت پنل HTML", callback_data="html")]
+    ])
+
+
+# --------------- QR CODE ----------------
+
+def generate_qr(url: str):
+    img = qrcode.make(url)
+    bio = io.BytesIO()
+    bio.name = "qr.png"
+    img.save(bio, "PNG")
+    bio.seek(0)
+    return bio
+
+
+# --------------- HANDLERS ----------------
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = (
+        "سلام 👋\n"
+        "به ربات پیشرفته PRX11 خوش آمدید.\n\n"
+        "از دکمه‌های زیر استفاده کنید:"
+    )
+    await update.message.reply_text(text, reply_markup=main_menu())
+
+
+async def send_link(update: Update, context: ContextTypes.DEFAULT_TYPE, key: str):
+    name, url = SUB_LINKS[key]
+    qr = generate_qr(url)
+
+    await update.callback_query.answer()
+    await update.callback_query.message.reply_photo(
+        photo=qr,
+        caption=f"{name}\n\n{url}",
+        reply_markup=main_menu()
+    )
+
+
+async def send_all(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.callback_query.answer()
+
+    msg = "📦 *ALL LINKS*\n\n" + "\n".join(
+        [f"{name}: `{url}`" for name, url in SUB_LINKS.values()]
+    )
+
+    await update.callback_query.message.reply_text(
+        msg, parse_mode="Markdown", reply_markup=main_menu()
+    )
+
+
+async def send_html(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.callback_query.answer()
+
+    path = "docs/index.html"
+    if not os.path.exists(path):
+        await update.callback_query.message.reply_text("فایل HTML پیدا نشد.")
+        return
+
+    await update.callback_query.message.reply_document(
+        document=InputFile(path),
+        caption="پنل HTML PRX11"
+    )
+
+
+# --------------- AUTO-REPLY ----------------
+
+async def auto_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    text = update.message.text.lower()
+
+    for key, (name, url) in SUB_LINKS.items():
+        if key in text:
+            qr = generate_qr(url)
+            await update.message.reply_photo(
+                photo=qr,
+                caption=f"{name}\n\n{url}",
+                reply_markup=main_menu()
+            )
+            return
+
+    # Default response
     await update.message.reply_text(
-        "سلام، من ربات PRX11 هستم.\n\n"
-        "/hiddify\n"
-        "/insta\n"
-        "/vmess\n"
-        "/vless\n"
-        "/ss\n"
-        "/trojan\n"
-        "/links\n"
+        "متوجه نشدم. از /start استفاده کن.",
+        reply_markup=main_menu()
     )
 
 
-async def links(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    msg = "لیست لینک‌ها:\n\n" + "\n".join(
-        [f"{k}: {v}" for k, v in SUB_LINKS.items()]
-    )
-    await update.message.reply_text(msg)
+# --------------- BUTTON HANDLER ----------------
+
+async def callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    data = update.callback_query.data
+
+    if data in SUB_LINKS:
+        await send_link(update, context, data)
+    elif data == "all":
+        await send_all(update, context)
+    elif data == "html":
+        await send_html(update, context)
 
 
-async def handler(update: Update, context: ContextTypes.DEFAULT_TYPE, key="hiddify"):
-    await update.message.reply_text(SUB_LINKS[key])
-
-
-async def hiddify(update: Update, ctx): await handler(update, ctx, "hiddify")
-async def insta(update: Update, ctx): await handler(update, ctx, "insta")
-async def vmess(update: Update, ctx): await handler(update, ctx, "vmess")
-async def vless(update: Update, ctx): await handler(update, ctx, "vless")
-async def ss(update: Update, ctx): await handler(update, ctx, "ss")
-async def trojan(update: Update, ctx): await handler(update, ctx, "trojan")
-
+# --------------- MAIN ----------------
 
 def main():
+
     token = os.getenv("BOT_TOKEN")
     if not token:
-        raise RuntimeError("BOT_TOKEN not set!")
+        raise RuntimeError("BOT_TOKEN env is not set")
 
     app = ApplicationBuilder().token(token).build()
 
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("links", links))
+    app.add_handler(CallbackQueryHandler(callback))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, auto_reply))
 
-    app.add_handler(CommandHandler("hiddify", hiddify))
-    app.add_handler(CommandHandler("insta", insta))
-    app.add_handler(CommandHandler("vmess", vmess))
-    app.add_handler(CommandHandler("vless", vless))
-    app.add_handler(CommandHandler("ss", ss))
-    app.add_handler(CommandHandler("trojan", trojan))
-
-    # IMPORTANT: Do NOT use asyncio.run()
     app.run_polling(stop_signals=None)
 
 
