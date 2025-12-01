@@ -1,54 +1,143 @@
-<p align="center">
-  <img src="https://img.shields.io/badge/PRX11-Premium-blue?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/TXT-Subscriptions-yellow?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Auto_Update-Enabled-brightgreen?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/CDN-jsDelivr-orange?style=for-the-badge" />
-</p>
+# PRX11 – Minimal iOS Edition  
+نسخه‌ی سبک، شیک و مینیمال برای ارائه اشتراک‌های TXT با طراحی الهام‌گرفته از iOS.
 
 ---
 
-# 🚀 PRX11 – TXT Subscription Collector
-اشتراک‌های V2Ray در قالب **TXT**  
-سازگار با Hiddify، V2RayNG، Nekobox  
-بروزرسانی خودکار چندبار در روز توسط GitHub Actions.
+## جدول محتوا (Table of Contents)
+- [ویژگی‌ها](#ویژگی‌ها)
+- [لینک‌های RAW](#لینکهای-raw)
+- [لینک‌های CDN](#لینکهای-cdn)
+- [QR Code اشتراک‌ها](#qr-code-اشتراکها)
+- [حمایت مالی](#حمایت-مالی)
+- [ارتباط با من](#ارتباط-با-من)
 
 ---
 
-# 🔗 لینک‌ها (RAW + CDN)
-
-## 📁 جدول لینک‌ها
-
-| نوع اشتراک | RAW | CDN |
-|-----------|------|------|
-| **Hiddify (100)** | https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-hiddify.txt | https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-hiddify.txt |
-| **Instagram / YouTube** | https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-insta-youto.txt | https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-insta-youto.txt |
-| **VMESS** | https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-vmess.txt | https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-vmess.txt |
-| **VLESS** | https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-vless.txt | https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-vless.txt |
-| **TROJAN** | https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-trojan.txt | https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-trojan.txt |
-| **Shadowsocks** | https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-ss.txt | https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector/output/subscriptions/prx11-ss.txt |
+## ویژگی‌ها
+- سبک و مینیمال، طراحی iOS  
+- خروجی‌های TXT پاک و استاندارد  
+- پشتیبانی از Hiddify / V2RayNG / Nekobox  
+- بروزرسانی خودکار چندبار در روز  
+- QR Code اختصاصی برای هر لینک  
+- مناسب استفاده در کانال، وبسایت و ربات تلگرام  
 
 ---
 
-# ☕ حمایت مالی (Donate)
+## لینک‌های RAW
 
-### CoffeeBede:
-<a href="https://www.coffeebede.com/miladfaryad1">
-  <img src="https://coffeebede.ir/DashboardTemplateV2/app-assets/images/banner/default-yellow.svg" width="260"/>
-</a>
+```
+Hiddify (100):
+https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-hiddify.txt
+
+Instagram / YouTube:
+https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-insta-youto.txt
+
+VMESS:
+https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-vmess.txt
+
+VLESS:
+https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-vless.txt
+
+TROJAN:
+https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-trojan.txt
+
+Shadowsocks:
+https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/main/output/subscriptions/prx11-ss.txt
+```
 
 ---
 
-# کانال تلگرام:
+## لینک‌های CDN (سریع)
+
+```
+Hiddify (100):
+https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector@main/output/subscriptions/prx11-hiddify.txt
+
+Instagram / YouTube:
+https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector@main/output/subscriptions/prx11-insta-youto.txt
+
+VMESS:
+https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector@main/output/subscriptions/prx11-vmess.txt
+
+VLESS:
+https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector@main/output/subscriptions/prx11-vless.txt
+
+TROJAN:
+https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector@main/output/subscriptions/prx11-trojan.txt
+
+Shadowsocks:
+https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector@main/output/subscriptions/prx11-ss.txt
+```
+
+---
+
+## QR Code اشتراک‌ها  
+برای اسکن کاربران Hiddify / V2RayNG
+
+### Hiddify (100)
+```
+https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector@main/output/subscriptions/prx11-hiddify.txt
+```
+
+### Instagram / YouTube
+```
+https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector@main/output/subscriptions/prx11-insta-youto.txt
+```
+
+### VMESS
+```
+https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector@main/output/subscriptions/prx11-vmess.txt
+```
+
+### VLESS
+```
+https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector@main/output/subscriptions/prx11-vless.txt
+```
+
+### TROJAN
+```
+https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector@main/output/subscriptions/prx11-trojan.txt
+```
+
+### Shadowsocks
+```
+https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector@main/output/subscriptions/prx11-ss.txt
+```
+
+---
+
+## حمایت مالی
+
+```
+USDT (TRC20):
+USDT (ERC20):
+BTC:
+ETH:
+TON:
+DOGE:
+LTC:
+```
+
+### CoffeeBede
+```
+https://www.coffeebede.com/miladfaryad1
+```
+
+---
+
+## ارتباط با من
+
+### تلگرام (کانال)
 ```
 https://t.me/proxystore11
 ```
 
-### ادمین :
+### تلگرام (ادمین)
 ```
 https://t.me/proxystoreadmin
 ```
 
-### اینستاگرام:
+### اینستاگرام
 ```
 miladfaryad1
 ```
@@ -56,5 +145,5 @@ miladfaryad1
 ---
 
 <p align="center">
-  ساخته شده با ❤️ توسط <b>PRX11</b>
+ساخته شده با ❤️ توسط PRX11
 </p>
