@@ -4,50 +4,58 @@ import base64
 import json
 import os
 import re
+import statistics
 import time
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
-from urllib.parse import unquote, urlparse
+from typing import Optional, Dict, List, Tuple
+from urllib.parse import unquote
 
-
-# ======================== تنظیمات Enterprise ========================
-
-OUTPUT_DIR = "output/subscriptions/"
+OUTPUT_DIR = "output/subscriptions"
 REPORT_FILE = "output/PRX11-REPORT.json"
+LOGGER_FILE = "output/PRX11-LOGGER.json"
 AUTO_UPDATE_FILE = "output/AUTO_UPDATE.txt"
 
-SOURCES = {
+SOURCES: Dict[str, List[str]] = {
     "vless": [
-        "https://raw.githubusercontent.com/SoliSpirit/v2ray-configs/refs/heads/main/Protocols/vless.txt"
+        "https://raw.githubusercontent.com/SoliSpirit/v2ray-configs/refs/heads/main/Protocols/vless.txt",
     ],
     "vmess": [
-        "https://raw.githubusercontent.com/SoliSpirit/v2ray-configs/refs/heads/main/Protocols/vmess.txt"
+        "https://raw.githubusercontent.com/SoliSpirit/v2ray-configs/refs/heads/main/Protocols/vmess.txt",
     ],
     "trojan": [
-        "https://raw.githubusercontent.com/SoliSpirit/v2ray-configs/refs/heads/main/Protocols/trojan.txt"
+        "https://raw.githubusercontent.com/SoliSpirit/v2ray-configs/refs/heads/main/Protocols/trojan.txt",
     ],
     "ss": [
-        "https://raw.githubusercontent.com/SoliSpirit/v2ray-configs/refs/heads/main/Protocols/ss.txt"
+        "https://raw.githubusercontent.com/SoliSpirit/v2ray-configs/refs/heads/main/Protocols/ss.txt",
     ],
     "frag": [
-        "https://raw.githubusercontent.com/hiddify/hiddify-app/refs/heads/main/test.configs/fragment"
+        "https://raw.githubusercontent.com/hiddify/hiddify-app/refs/heads/main/test.configs/fragment",
     ],
 }
 
-# GeoIP/Latency را در صورت نیاز فعال/غیرفعال کن
 ENABLE_GEOIP = True
 ENABLE_LATENCY = True
-
-# حداکثر تعداد کانفیگ برای Enrich (برای جلوگیری از فشار به APIها)
-MAX_ENRICH_GEOIP = 400
-MAX_ENRICH_LATENCY = 250
-
-# تنظیمات GeoIP (با سرویس رایگان ip-api.com)
+MAX_ENRICH_GEOIP = 700
+MAX_ENRICH_LATENCY = 500
 GEOIP_URL = "http://ip-api.com/json/{host}?fields=status,country,countryCode"
 
+COUNTRY_PRIORITY: Dict[str, int] = {
+    "DE": 9,
+    "FI": 9,
+    "NL": 9,
+    "SE": 8,
+    "CH": 8,
+    "AT": 7,
+    "US": 7,
+    "CA": 7,
+    "FR": 6,
+    "GB": 6,
+    "SG": 6,
+    "AU": 6,
+    "": 0,
+}
 
-# ======================== مدل داده کانفیگ ========================
 
 @dataclass
 class ConfigEntry:
@@ -59,24 +67,11 @@ class ConfigEntry:
     country: Optional[str] = None
     country_code: Optional[str] = None
     latency_ms: Optional[float] = None
-
-
-# ======================== ابزارهای کمکی ========================
-
-def parse_host_port_from_url(url: str):
-    try:
-        parsed = urlparse(url)
-        host = parsed.hostname
-        port = parsed.port
-        return host, port
-    except Exception:
-        return None, None
+    quality_score: Optional[float] = None
 
 
 def parse_vless(line: str) -> ConfigEntry:
-    identity = ""
-    host = None
-    port = None
+    identity, host, port = None, None, None
     try:
         no_scheme = line.split("://", 1)[1]
         userinfo, rest = no_scheme.split("@", 1)
@@ -89,19 +84,17 @@ def parse_vless(line: str) -> ConfigEntry:
             host = hp
     except Exception:
         pass
-    return ConfigEntry(proto="vless", raw=line, identity=identity or line, host=host, port=port)
+    return ConfigEntry("vless", line, identity or line, host, port)
 
 
 def parse_vmess(line: str) -> ConfigEntry:
-    identity = ""
-    host = None
-    port = None
+    identity, host, port = None, None, None
     try:
-        b64 = line.split("://", 1)[1].strip()
-        pad = len(b64) % 4
+        raw = line.split("://", 1)[1].strip()
+        pad = len(raw) % 4
         if pad:
-            b64 += "=" * (4 - pad)
-        decoded = base64.b64decode(b64).decode("utf-8", errors="ignore")
+            raw += "=" * (4 - pad)
+        decoded = base64.b64decode(raw).decode("utf-8", errors="ignore")
         obj = json.loads(decoded)
         identity = (obj.get("id") or obj.get("uuid") or "").strip()
         host = (obj.get("host") or obj.get("add") or "").strip() or None
@@ -115,13 +108,11 @@ def parse_vmess(line: str) -> ConfigEntry:
             port = p
     except Exception:
         pass
-    return ConfigEntry(proto="vmess", raw=line, identity=identity or line, host=host, port=port)
+    return ConfigEntry("vmess", line, identity or line, host, port)
 
 
 def parse_trojan(line: str) -> ConfigEntry:
-    identity = ""
-    host = None
-    port = None
+    identity, host, port = None, None, None
     try:
         no_scheme = line.split("://", 1)[1]
         userinfo, rest = no_scheme.split("@", 1)
@@ -134,16 +125,14 @@ def parse_trojan(line: str) -> ConfigEntry:
             host = hp
     except Exception:
         pass
-    return ConfigEntry(proto="trojan", raw=line, identity=identity or line, host=host, port=port)
+    return ConfigEntry("trojan", line, identity or line, host, port)
 
 
 def parse_ss(line: str) -> ConfigEntry:
-    identity = ""
-    host = None
-    port = None
+    identity, host, port = None, None, None
     try:
-        no_scheme = line.split("://", 1)[1]
-        tmp = no_scheme.split("#", 1)[0].split("?", 1)[0]
+        body = line.split("://", 1)[1]
+        tmp = body.split("#", 1)[0].split("?", 1)[0]
         if "@" in tmp:
             userinfo, hp = tmp.split("@", 1)
             identity = unquote(userinfo)
@@ -156,11 +145,11 @@ def parse_ss(line: str) -> ConfigEntry:
             identity = unquote(tmp)
     except Exception:
         pass
-    return ConfigEntry(proto="ss", raw=line, identity=identity or line, host=host, port=port)
+    return ConfigEntry("ss", line, identity or line, host, port)
 
 
 def parse_frag(line: str) -> ConfigEntry:
-    return ConfigEntry(proto="frag", raw=line, identity=line)
+    return ConfigEntry("frag", line, line)
 
 
 def parse_config(proto: str, line: str) -> Optional[ConfigEntry]:
@@ -177,7 +166,7 @@ def parse_config(proto: str, line: str) -> Optional[ConfigEntry]:
         return parse_ss(line.strip())
     if proto == "frag":
         return parse_frag(line.strip())
-    return ConfigEntry(proto=proto, raw=line.strip(), identity=line.strip())
+    return ConfigEntry(proto, line.strip(), line.strip())
 
 
 FAKE_PATTERNS = [
@@ -190,6 +179,7 @@ FAKE_PATTERNS = [
     r"xxxx",
 ]
 
+
 def is_fake(entry: ConfigEntry) -> bool:
     txt = entry.raw.lower()
     for p in FAKE_PATTERNS:
@@ -198,9 +188,9 @@ def is_fake(entry: ConfigEntry) -> bool:
     return False
 
 
-def dedupe_entries(entries: list[ConfigEntry]) -> list[ConfigEntry]:
+def dedupe_entries(entries: List[ConfigEntry]) -> List[ConfigEntry]:
     seen = set()
-    out: list[ConfigEntry] = []
+    out: List[ConfigEntry] = []
     for e in entries:
         key = f"{e.proto}|{e.identity}"
         if key not in seen:
@@ -209,43 +199,19 @@ def dedupe_entries(entries: list[ConfigEntry]) -> list[ConfigEntry]:
     return out
 
 
-def sort_entries(entries: list[ConfigEntry]) -> list[ConfigEntry]:
-    return sorted(
-        entries,
-        key=lambda e: (
-            e.country_code or "ZZ",
-            e.latency_ms if e.latency_ms is not None else 999999,
-            e.identity,
-            len(e.raw),
-        ),
-    )
-
-
-def ensure_dirs():
+def ensure_dirs() -> None:
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     os.makedirs(os.path.dirname(REPORT_FILE), exist_ok=True)
 
 
-def write_file(path: str, lines: list[str], header: Optional[str] = None):
-    with open(path, "w", encoding="utf-8") as f:
-        if header:
-            f.write(header.strip() + "\n")
-        f.write("\n".join(lines))
-
-
-# ======================== GeoIP و Latency ========================
-
-async def geoip_lookup(host: str, session: aiohttp.ClientSession) -> tuple[Optional[str], Optional[str]]:
+async def geoip_lookup(host: str, session: aiohttp.ClientSession) -> Tuple[Optional[str], Optional[str]]:
     if not host:
         return None, None
     try:
-        url = GEOIP_URL.format(host=host)
-        async with session.get(url, timeout=5) as r:
+        async with session.get(GEOIP_URL.format(host=host), timeout=5) as r:
             data = await r.json(content_type=None)
             if data.get("status") == "success":
-                country = data.get("country")
-                cc = data.get("countryCode")
-                return country, cc
+                return data.get("country"), data.get("countryCode")
     except Exception:
         pass
     return None, None
@@ -261,46 +227,38 @@ async def measure_latency(entry: ConfigEntry, session: aiohttp.ClientSession) ->
     try:
         async with session.get(url, timeout=3) as r:
             await r.read()
-        elapsed = time.monotonic() - start
-        return round(elapsed * 1000, 1)
+        return round((time.monotonic() - start) * 1000, 1)
     except Exception:
         return None
 
 
-async def enrich_entries(entries: list[ConfigEntry], session: aiohttp.ClientSession):
-    geo_targets = [e for e in entries if e.host][:MAX_ENRICH_GEOIP] if ENABLE_GEOIP else []
-    lat_targets = [e for e in entries if e.host][:MAX_ENRICH_LATENCY] if ENABLE_LATENCY else []
+async def enrich_entries(entries: List[ConfigEntry], session: aiohttp.ClientSession) -> None:
+    geo_targets = entries[:MAX_ENRICH_GEOIP] if ENABLE_GEOIP else []
+    lat_targets = entries[:MAX_ENRICH_LATENCY] if ENABLE_LATENCY else []
 
-    sem_geo = asyncio.Semaphore(20)
-    sem_lat = asyncio.Semaphore(30)
+    async def do_geo(e: ConfigEntry) -> None:
+        c, cc = await geoip_lookup(e.host or "", session)
+        if c:
+            e.country = c
+        if cc:
+            e.country_code = cc
 
-    async def _geo_task(e: ConfigEntry):
-        async with sem_geo:
-            country, cc = await geoip_lookup(e.host, session)
-            if country:
-                e.country = country
-            if cc:
-                e.country_code = cc
+    async def do_lat(e: ConfigEntry) -> None:
+        ms = await measure_latency(e, session)
+        if ms is not None:
+            e.latency_ms = ms
 
-    async def _lat_task(e: ConfigEntry):
-        async with sem_lat:
-            ms = await measure_latency(e, session)
-            if ms is not None:
-                e.latency_ms = ms
-
-    tasks = []
+    tasks: List[asyncio.Task] = []
     for e in geo_targets:
-        tasks.append(asyncio.create_task(_geo_task(e)))
+        tasks.append(asyncio.create_task(do_geo(e)))
     for e in lat_targets:
-        tasks.append(asyncio.create_task(_lat_task(e)))
+        tasks.append(asyncio.create_task(do_lat(e)))
 
     if tasks:
         await asyncio.gather(*tasks)
 
 
-# ======================== دانلود موازی منابع ========================
-
-async def fetch_url(url: str, session: aiohttp.ClientSession) -> list[str]:
+async def fetch_url(url: str, session: aiohttp.ClientSession) -> List[str]:
     try:
         async with session.get(url, timeout=25) as r:
             text = await r.text()
@@ -309,60 +267,66 @@ async def fetch_url(url: str, session: aiohttp.ClientSession) -> list[str]:
         return []
 
 
-async def fetch_all_sources() -> dict[str, list[str]]:
+async def fetch_all() -> Tuple[Dict[str, List[ConfigEntry]], int, int]:
     async with aiohttp.ClientSession() as session:
-        tasks = []
+        tasks: List[Tuple[str, asyncio.Task]] = []
         for proto, urls in SOURCES.items():
             for u in urls:
                 tasks.append((proto, asyncio.create_task(fetch_url(u, session))))
 
-        raw_results: dict[str, list[str]] = {k: [] for k in SOURCES.keys()}
+        raw_lines: Dict[str, List[str]] = {k: [] for k in SOURCES.keys()}
 
         for proto, task in tasks:
             try:
-                data = await task
-                raw_results[proto].extend(data)
+                lines = await task
+                raw_lines[proto].extend(lines)
             except Exception:
                 pass
 
-        # حذف هدرهای fragment (#profile-...) → فقط direct/xdirect
-        if "frag" in raw_results:
-            raw_results["frag"] = [
-                l for l in raw_results["frag"]
+        if "frag" in raw_lines:
+            raw_lines["frag"] = [
+                l for l in raw_lines["frag"]
                 if not l.strip().startswith("#")
             ]
 
-        # Enrich بعد از ساخته شدن Session کلی
-        all_entries: list[ConfigEntry] = []
-
-        for proto, lines in raw_results.items():
+        entries: List[ConfigEntry] = []
+        for proto, lines in raw_lines.items():
             for line in lines:
                 e = parse_config(proto, line)
                 if not e:
                     continue
                 if proto != "frag" and is_fake(e):
                     continue
-                all_entries.append(e)
+                entries.append(e)
 
-        # Dedup کلی
-        all_entries = dedupe_entries(all_entries)
+        initial_count = len(entries)
+        entries = dedupe_entries(entries)
+        dedup_count = len(entries)
 
-        # Enrich GeoIP & Latency
-        await enrich_entries(all_entries, session)
+        await enrich_entries(entries, session)
 
-        # گروه‌بندی دوباره بر اساس پروتکل
-        grouped: dict[str, list[ConfigEntry]] = {k: [] for k in SOURCES.keys()}
-        for e in all_entries:
+        grouped: Dict[str, List[ConfigEntry]] = {k: [] for k in SOURCES.keys()}
+        for e in entries:
             grouped.setdefault(e.proto, []).append(e)
 
-        # Sort در هر پروتکل
-        for k in grouped.keys():
-            grouped[k] = sort_entries(grouped[k])
-
-        return grouped
+        return grouped, initial_count, dedup_count
 
 
-# ======================== هدر Hiddify ========================
+def compute_quality(e: ConfigEntry) -> None:
+    country_weight = COUNTRY_PRIORITY.get(e.country_code or "", 0)
+    lat = e.latency_ms if e.latency_ms is not None else 350.0
+    e.quality_score = country_weight * 10 - lat * 0.3
+
+
+def auto_failover_hiddify(vless_entries: List[ConfigEntry]) -> List[str]:
+    scored: List[ConfigEntry] = []
+    for e in vless_entries:
+        compute_quality(e)
+        scored.append(e)
+    scored.sort(key=lambda x: (-(x.quality_score or -9999)))
+    top = scored[:100]
+    return [e.raw for e in top]
+
 
 HIDDIFY_HEADER = """#profile-title: base64:8J+UpSBGcmFnbWVudCDwn5Sl
 #profile-update-interval: 24
@@ -374,75 +338,92 @@ HIDDIFY_HEADER = """#profile-title: base64:8J+UpSBGcmFnbWVudCDwn5Sl
 """
 
 
-# ======================== اجرای اصلی ========================
-
-async def run():
+async def run() -> None:
     ensure_dirs()
 
-    grouped = await fetch_all_sources()
+    grouped, initial_count, dedup_count = await fetch_all()
 
-    vless_entries = grouped.get("vless", [])
-    vmess_entries = grouped.get("vmess", [])
-    trojan_entries = grouped.get("trojan", [])
-    ss_entries = grouped.get("ss", [])
-    frag_entries = grouped.get("frag", [])
+    vless = grouped.get("vless", [])
+    vmess = grouped.get("vmess", [])
+    trojan = grouped.get("trojan", [])
+    ss = grouped.get("ss", [])
+    frag = grouped.get("frag", [])
 
-    vless_lines = [e.raw for e in vless_entries]
-    vmess_lines = [e.raw for e in vmess_entries]
-    trojan_lines = [e.raw for e in trojan_entries]
-    ss_lines = [e.raw for e in ss_entries]
-    frag_lines = [e.raw for e in frag_entries]
+    vless_raw = [e.raw for e in vless]
+    vmess_raw = [e.raw for e in vmess]
+    trojan_raw = [e.raw for e in trojan]
+    ss_raw = [e.raw for e in ss]
+    frag_raw = [e.raw for e in frag]
 
-    hiddify_lines = vless_lines[:100]
-    insta_lines = frag_lines
+    hiddify_lines = auto_failover_hiddify(vless)
+    insta_lines = frag_raw
 
-    write_file(os.path.join(OUTPUT_DIR, "prx11-vless.txt"), vless_lines)
-    write_file(os.path.join(OUTPUT_DIR, "prx11-vmess.txt"), vmess_lines)
-    write_file(os.path.join(OUTPUT_DIR, "prx11-trojan.txt"), trojan_lines)
-    write_file(os.path.join(OUTPUT_DIR, "prx11-ss.txt"), ss_lines)
-    write_file(os.path.join(OUTPUT_DIR, "prx11-hiddify.txt"), hiddify_lines, HIDDIFY_HEADER)
-    write_file(os.path.join(OUTPUT_DIR, "prx11-insta-youto.txt"), insta_lines, HIDDIFY_HEADER)
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-    all_entries = vless_entries + vmess_entries + trojan_entries + ss_entries
-    all_entries = dedupe_entries(all_entries)
-    all_lines = [e.raw for e in sort_entries(all_entries)]
-    write_file(os.path.join(OUTPUT_DIR, "prx11-all.txt"), all_lines)
+    with open(os.path.join(OUTPUT_DIR, "prx11-vless.txt"), "w", encoding="utf-8") as f:
+        f.write("\n".join(vless_raw))
+    with open(os.path.join(OUTPUT_DIR, "prx11-vmess.txt"), "w", encoding="utf-8") as f:
+        f.write("\n".join(vmess_raw))
+    with open(os.path.join(OUTPUT_DIR, "prx11-trojan.txt"), "w", encoding="utf-8") as f:
+        f.write("\n".join(trojan_raw))
+    with open(os.path.join(OUTPUT_DIR, "prx11-ss.txt"), "w", encoding="utf-8") as f:
+        f.write("\n".join(ss_raw))
+
+    with open(os.path.join(OUTPUT_DIR, "prx11-hiddify.txt"), "w", encoding="utf-8") as f:
+        f.write(HIDDIFY_HEADER + "\n" + "\n".join(hiddify_lines))
+    with open(os.path.join(OUTPUT_DIR, "prx11-insta-youto.txt"), "w", encoding="utf-8") as f:
+        f.write(HIDDIFY_HEADER + "\n" + "\n".join(insta_lines))
+
+    all_raw = vless_raw + vmess_raw + trojan_raw + ss_raw
+    all_raw = list(dict.fromkeys(all_raw))
+    with open(os.path.join(OUTPUT_DIR, "prx11-all.txt"), "w", encoding="utf-8") as f:
+        f.write("\n".join(all_raw))
 
     iran_ts = datetime.utcnow().timestamp() + 3.5 * 3600
     iran_str = datetime.fromtimestamp(iran_ts).strftime("%Y-%m-%d %H:%M:%S")
-    write_file(AUTO_UPDATE_FILE, [f"Auto Update: {iran_str}"])
+    with open(AUTO_UPDATE_FILE, "w", encoding="utf-8") as f:
+        f.write(f"Auto Update: {iran_str}")
 
-    report = {
-        "update_time_iran": iran_str,
-        "counts": {
-            "vless": len(vless_entries),
-            "vmess": len(vmess_entries),
-            "trojan": len(trojan_entries),
-            "ss": len(ss_entries),
-            "fragment": len(frag_entries),
-            "all": len(all_entries),
-        },
-        "geoip_enabled": ENABLE_GEOIP,
-        "latency_enabled": ENABLE_LATENCY,
-        "sample_geo": [
-            {
-                "proto": e.proto,
-                "identity": e.identity,
-                "host": e.host,
-                "country": e.country,
-                "country_code": e.country_code,
-                "latency_ms": e.latency_ms,
-            }
-            for e in all_entries[:50]
-        ],
-        "sources": SOURCES,
+    country_stats: Dict[str, int] = {}
+    latency_map: Dict[str, List[float]] = {}
+
+    for lst in [vless, vmess, trojan, ss]:
+        for e in lst:
+            cc = e.country_code or "??"
+            country_stats[cc] = country_stats.get(cc, 0) + 1
+            if e.latency_ms is not None:
+                latency_map.setdefault(cc, []).append(e.latency_ms)
+
+    latency_summary: Dict[str, Dict[str, float]] = {}
+    for cc, vals in latency_map.items():
+        latency_summary[cc] = {
+            "avg": round(statistics.mean(vals), 1),
+            "min": round(min(vals), 1),
+            "max": round(max(vals), 1),
+        }
+
+    top_fast = sorted(
+        [(cc, latency_summary[cc]["avg"]) for cc in latency_summary],
+        key=lambda x: x[1],
+    )[:10]
+
+    log_data = {
+        "updated_at_iran": iran_str,
+        "initial_configs": initial_count,
+        "after_dedup": dedup_count,
+        "removed_duplicates": initial_count - dedup_count,
+        "country_distribution": country_stats,
+        "latency_summary_ms": latency_summary,
+        "top10_fastest_countries": top_fast,
     }
 
-    with open(REPORT_FILE, "w", encoding="utf-8") as f:
-        json.dump(report, f, indent=2, ensure_ascii=False)
+    with open(LOGGER_FILE, "w", encoding="utf-8") as f:
+        json.dump(log_data, f, indent=2, ensure_ascii=False)
+
+    print("Enterprise Collector completed at", iran_str)
 
 
-def main():
+def main() -> None:
     asyncio.run(run())
 
 
