@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>PRX11 Mini App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: #020617;
+      color: #e5e7eb;
+      font-family: system-ui, sans-serif;
+    }
+    .card {
+      background: rgba(15,23,42,0.9);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 10px;
+      border: 1px solid rgba(148,163,184,0.4);
+    }
+    .btn {
+      background: #3b82f6;
+      border-radius: 999px;
+      padding: 8px 12px;
+      text-align: center;
+      font-size: 0.8rem;
+      margin-top: 8px;
+    }
+    code {
+      direction: ltr;
+      unicode-bidi: embed;
+      font-size: 0.7rem;
+    }
+  </style>
+</head>
+<body class="p-4">
+
+  <h1 class="text-center text-xl font-bold mb-4">PRX11 Mini App</h1>
+
+  <div id="content">در حال بارگذاری…</div>
+
+  <script>
+    const LINKS = {
+      "Hiddify (100)": "https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector@main/output/subscriptions/prx11-hiddify.txt",
+      "Instagram / YouTube": "https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector@main/output/subscriptions/prx11-insta-youto.txt",
+      "VMESS": "https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector@main/output/subscriptions/prx11-vmess.txt",
+      "VLESS": "https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector@main/output/subscriptions/prx11-vless.txt",
+      "TROJAN": "https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector@main/output/subscriptions/prx11-trojan.txt",
+      "Shadowsocks": "https://cdn.jsdelivr.net/gh/proxystore11/v2ray-config-collector@main/output/subscriptions/prx11-ss.txt"
+    };
+
+    function qr(url) {
+      return "https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=" + encodeURIComponent(url);
+    }
+
+    function render() {
+      const box = document.getElementById("content");
+      let html = "";
+      Object.entries(LINKS).forEach(([name,url]) => {
+        html += `
+          <div class="card">
+            <div class="font-semibold text-sm mb-1">${name}</div>
+            <img src="${qr(url)}" class="rounded-xl mb-2" />
+            <code>${url}</code>
+            <div class="btn" onclick="copy('${url}')">کپی لینک</div>
+          </div>
+        `;
+      });
+      box.innerHTML = html;
+    }
+
+    function copy(text) {
+      navigator.clipboard.writeText(text);
+      if (window.Telegram && Telegram.WebApp) {
+        Telegram.WebApp.showAlert("لینک کپی شد");
+      } else {
+        alert("Copied");
+      }
+    }
+
+    if (window.Telegram && Telegram.WebApp) {
+      Telegram.WebApp.expand();
+    }
+    render();
+  </script>
+
+</body>
+</html>
