@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>PRX11 Enterprise Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      background: radial-gradient(circle at top, #0f172a 0, #020617 55%, #000 100%);
+      color: #e5e7eb;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .glass {
+      backdrop-filter: blur(18px);
+      background: rgba(15,23,42,0.8);
+      border: 1px solid rgba(148,163,184,0.4);
+    }
+    .badge {
+      border-radius: 999px;
+      padding: 0.3rem 0.75rem;
+      font-size: 0.75rem;
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <div class="max-w-6xl mx-auto px-4 py-8 space-y-8">
+
+    <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div>
+        <h1 class="text-3xl font-bold mb-1">PRX11 Enterprise Dashboard</h1>
+        <p class="text-sm text-slate-300">
+          مانیتورینگ کلکتور، کشورها، Latency و Duplicateها
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <span class="badge bg-emerald-600/90 text-white">Collector: Active</span>
+        <span id="updatedAt" class="badge bg-slate-700/80 text-slate-100">
+          آخرین بروزرسانی: -
+        </span>
+      </div>
+    </header>
+
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="glass rounded-2xl p-4">
+        <div class="text-xs text-slate-400 mb-1">کل کانفیگ‌ها</div>
+        <div id="initialConfigs" class="text-2xl font-bold">-</div>
+      </div>
+      <div class="glass rounded-2xl p-4">
+        <div class="text-xs text-slate-400 mb-1">بعد از Dedup</div>
+        <div id="afterDedup" class="text-2xl font-bold">-</div>
+      </div>
+      <div class="glass rounded-2xl p-4">
+        <div class="text-xs text-slate-400 mb-1">Duplicate حذف‌شده</div>
+        <div id="removedDuplicates" class="text-2xl font-bold">-</div>
+      </div>
+      <div class="glass rounded-2xl p-4">
+        <div class="text-xs text-slate-400 mb-1">تعداد کشورها</div>
+        <div id="countryCount" class="text-2xl font-bold">-</div>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="glass rounded-2xl p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="font-semibold text-sm">۱۰ کشور سریع‌تر (میانگین پینگ)</h2>
+          <span class="text-xs text-slate-400">from LOGGER</span>
+        </div>
+        <canvas id="fastCountriesChart" height="200"></canvas>
+      </div>
+
+      <div class="glass rounded-2xl p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="font-semibold text-sm">خلاصه Latency</h2>
+          <span class="text-xs text-slate-400">avg/min/max</span>
+        </div>
+        <div id="latencySummary" class="text-xs space-y-1 max-h-64 overflow-auto"></div>
+      </div>
+    </section>
+
+    <section class="glass rounded-2xl p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="font-semibold text-sm">توزیع کشورها</h2>
+        <span class="text-xs text-slate-400">Country Distribution</span>
+      </div>
+      <div class="overflow-auto max-h-80 text-xs">
+        <table class="min-w-full border-collapse">
+          <thead class="bg-slate-800/80">
+            <tr>
+              <th class="px-3 py-2 text-right">کد</th>
+              <th class="px-3 py-2 text-right">تعداد کانفیگ</th>
+            </tr>
+          </thead>
+          <tbody id="countryTableBody" class="divide-y divide-slate-700/70"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    const LOGGER_URL = "https://raw.githubusercontent.com/proxystore11/v2ray-config-collector/refs/heads/main/output/PRX11-LOGGER.json";
+
+    async function loadLogger() {
+      try {
+        const res = await fetch(LOGGER_URL + "?_=" + Date.now());
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = await res.json();
+        renderDashboard(data);
+      } catch (err) {
+        console.error(err);
+        document.getElementById("updatedAt").textContent = "خطا در دریافت داده";
+      }
+    }
+
+    function renderDashboard(data) {
+      const updatedAt = data.updated_at_iran || "-";
+      document.getElementById("updatedAt").textContent = "آخرین بروزرسانی ایران: " + updatedAt;
+      document.getElementById("initialConfigs").textContent = data.initial_configs ?? "-";
+      document.getElementById("afterDedup").textContent = data.after_dedup ?? "-";
+      document.getElementById("removedDuplicates").textContent = data.removed_duplicates ?? "-";
+      const countryDist = data.country_distribution || {};
+      document.getElementById("countryCount").textContent = Object.keys(countryDist).length;
+      renderCountryTable(countryDist);
+      renderLatencySummary(data.latency_summary_ms || {});
+      renderFastCountriesChart(data.top10_fastest_countries || []);
+    }
+
+    function renderCountryTable(countryDist) {
+      const tbody = document.getElementById("countryTableBody");
+      tbody.innerHTML = "";
+      const entries = Object.entries(countryDist).sort((a,b) => b[1]-a[1]);
+      entries.forEach(([cc,count]) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="px-3 py-2">${cc}</td>
+          <td class="px-3 py-2">${count}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderLatencySummary(latencySummary) {
+      const box = document.getElementById("latencySummary");
+      box.innerHTML = "";
+      const entries = Object.entries(latencySummary).sort((a,b) => a[1].avg - b[1].avg);
+      entries.forEach(([cc,st]) => {
+        const div = document.createElement("div");
+        div.textContent = `${cc} → avg: ${st.avg} ms / min: ${st.min} / max: ${st.max}`;
+        box.appendChild(div);
+      });
+    }
+
+    let chartInstance = null;
+    function renderFastCountriesChart(topFastest) {
+      const ctx = document.getElementById("fastCountriesChart").getContext("2d");
+      const labels = topFastest.map(([cc,avg]) => cc);
+      const values = topFastest.map(([cc,avg]) => avg);
+      if (chartInstance) chartInstance.destroy();
+      chartInstance = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [{ label: "avg ms", data: values }]
+        },
+        options: {
+          scales: {
+            y: { beginAtZero: true, title: { display: true, text: "ms" } }
+          },
+          plugins: { legend: { display: false } }
+        }
+      });
+    }
+
+    loadLogger();
+  </script>
+</body>
+</html>
